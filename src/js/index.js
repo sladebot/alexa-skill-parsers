@@ -8,6 +8,8 @@ var margin = {top: 20, right: 20, bottom: 30, left: 40},
     width = 960 - margin.left - margin.right,
     height = 500 - margin.top - margin.bottom;
 
+var tooltip = d3.select("body").append("div").attr("class", "tooltip");
+
 // append the svg object to the body of the page
 // append a 'group' element to 'svg'
 // moves the 'group' element to the top left margin
@@ -45,7 +47,6 @@ function renderChart(data) {
     .attr("class", "bar")
     .attr("x", 1)
     .attr("transform", function(d) {
-      debugger;
       return "translate(" + x(d.x0) + "," + y(d.length) + ")"
     })
     .attr("width", function(d) {
@@ -53,7 +54,16 @@ function renderChart(data) {
     })
     .attr("height", function(d) {
       return height - y(d.length);
-    });
+    })
+    .on('mousemove', (d) => {
+      debugger;
+      tooltip
+        .style("left", d3.event.pageX - 50 + "px")
+        .style("top", d3.event.pageY - 70 + "px")
+        .style("display", "inline-block")
+        .html((d.length) + "<br>");
+    })
+    .on("mouseout", function(d){ tooltip.style("display", "none");});
 
 
   // Add X Axis
