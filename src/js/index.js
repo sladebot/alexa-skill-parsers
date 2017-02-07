@@ -8,53 +8,71 @@ var margin = {top: 20, right: 20, bottom: 30, left: 40},
     width = 960 - margin.left - margin.right,
     height = 500 - margin.top - margin.bottom;
 
-// set the ranges
-var x = d3.scaleBand()
-          .range([0, width])
-          .padding(0.1);
-var y = d3.scaleLinear()
-          .range([height, 0]);
-          
 // append the svg object to the body of the page
 // append a 'group' element to 'svg'
 // moves the 'group' element to the top left margin
 var svg = d3.select("body").append("svg")
     .attr("width", width + margin.left + margin.right)
     .attr("height", height + margin.top + margin.bottom)
-  .append("g")
+    .append("g")
     .attr("transform", 
           "translate(" + margin.left + "," + margin.top + ")");
+
+function renderChart(data) {
+  // set the ranges
+  var x = d3.scaleLinear()
+            .range([0, width])
+            .domain([0, d3.max(data, (_d) => {return _d.avg})]);
+
+
+  var bins = d3.histogram()
+              .value(_d => {
+                return _d.avg;
+              })
+              .domain(x.domain())
+              .thresholds(x.ticks(20))(data)
+
+  var y = d3.scaleLinear()
+            .range([height, 0])
+            .domain([0, d3.max(bins, (_d) => {return _d.length;})]);
+
+
+
+  
+  svg.selectAll("rect")
+    .data(bins)
+    .enter().append("rect")
+    .attr("class", "bar")
+    .attr("x", 1)
+    .attr("transform", function(d) {
+      debugger;
+      return "translate(" + x(d.x0) + "," + y(d.length) + ")"
+    })
+    .attr("width", function(d) {
+      return x(d.x1) - x(d.x0) - 1;
+    })
+    .attr("height", function(d) {
+      return height - y(d.length);
+    });
+
+
+  // Add X Axis
+  svg.append("g")
+    .attr("class", "axis axis--x")
+    .attr("transform", "translate(0," + height + ")")
+    .call(d3.axisBottom(x));
+  
+  svg.append("g")
+    .call(d3.axisLeft(y));
+}
 
 // get the data
 d3.csv("data/baseball_data.csv", function(error, data) {
   if (error) throw error;
-
-  // format the data
-  data.forEach(function(d) {
-    d.height = +d.height;
+  data.forEach(_d => {
+    _d.HR = +_d.HR;
+    _d.weight = +_d.weight;
+    _d.avg = +_d.avg;
   });
-
-  // Scale the range of the data in the domains
-  x.domain(data.map(function(d) { return d.name; }));
-  y.domain([0, d3.max(data, function(d) { return d.height; })]);
-
-  // append the rectangles for the bar chart
-  svg.selectAll(".bar")
-      .data(data)
-    .enter().append("rect")
-      .attr("class", "bar")
-      .attr("x", function(d) { return x(d.name); })
-      .attr("width", x.bandwidth())
-      .attr("y", function(d) { return y(d.height); })
-      .attr("height", function(d) { return height - y(d.height); });
-
-  // add the x Axis
-  svg.append("g")
-      .attr("transform", "translate(0," + height + ")")
-      .call(d3.axisBottom(x));
-
-  // add the y Axis
-  svg.append("g")
-      .call(d3.axisLeft(y));
-
+  renderChart(data);
 });
