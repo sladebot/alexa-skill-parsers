@@ -1,9 +1,30 @@
-<% include header %>
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width">
+  <title><%- title %></title>
+  <link rel="stylesheet" href="/css/style.css"></link>
+  <script src="/components/d3/d3.min.js"></script>
+  <% if (ENV_DEVELOPMENT) { %>
+    <script src="http://localhost:35729/livereload.js"></script>
+  <% } %>
+</head>
+<body>
 
-  <h1><%-title %></h1>
-  <p>Welcome to <%-title %></p>
+
+  <% include navbar %>
+  <div class="container">
+    <div class="row">
+      <div class="col s12 m12 l12">
+        <div class="chart"></div>
+      </div>
+    </div>
+  </div>
 
   <script src="js/index.js"></script>
-  <script src="components/jquery-csv/src/jquery.csv.min.js"></script>
+  <script src="/components/jquery-csv/src/jquery.csv.min.js"></script>
+  <script src="/components/materialize/dist/js/materialize.min.js"></script>
 
-<% include footer %>
+  </body>
+</html>

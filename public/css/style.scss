@@ -1,22 +1,25 @@
+@import "../components/materialize/dist/css/materialize.min.css";
+@import url('https://fonts.googleapis.com/css?family=Roboto');
+@import url('https://fonts.googleapis.com/icon?family=Material+Icons');
+
+
 body {
-  padding: 50px;
-  font: 14px "Lucida Grande", Helvetica, Arial, sans-serif;
+  font: 14px "Roboto";
+}
+
+nav {
+	.brand-logo {
+		margin-left: 10px;
+		padding: 5px;
+	}
 }
 
 a {
   color: #00B7FF;
 }
 
-
-.axis path,
-.axis line {
-	fill: none;
-	stroke: black;
-	shape-rendering: crispEdges;
-}
-.axis text {
-	font-family: sans-serif;
-	font-size: 11px;
+.chart {
+	margin-top: 100px;
 }
 
 rect {
@@ -29,7 +32,10 @@ rect:hover{
 	fill: orange;
 }
 
-rect.bar { fill: steelblue; margin: 1px; }
+rect.bar { 
+	fill: brown; 
+	margin: 1px; 
+}
 
 .tooltip {
 	position: absolute;

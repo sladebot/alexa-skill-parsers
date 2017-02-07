@@ -2,45 +2,80 @@ var $ = jQuery = require('jquery');
 var d3 = require("d3"),
     _ = require("lodash");
 
-var Util = require("./util");
 
 var margin = {top: 20, right: 20, bottom: 30, left: 40},
     width = 960 - margin.left - margin.right,
     height = 500 - margin.top - margin.bottom;
 
-var tooltip = d3.select("body").append("div").attr("class", "tooltip");
+var tooltip = d3.select(".chart").append("div").attr("class", "tooltip");
 
-// append the svg object to the body of the page
-// append a 'group' element to 'svg'
-// moves the 'group' element to the top left margin
-var svg = d3.select("body").append("svg")
+var svg = d3.select(".chart").append("svg")
     .attr("width", width + margin.left + margin.right)
     .attr("height", height + margin.top + margin.bottom)
     .append("g")
     .attr("transform", 
           "translate(" + margin.left + "," + margin.top + ")");
 
-function renderChart(data) {
-  // set the ranges
-  var x = d3.scaleLinear()
-            .range([0, width])
-            .domain([0, d3.max(data, (_d) => {return _d.avg})]);
+var x = d3.scaleLinear()
+          .range([0, width]);
 
-
-  var bins = d3.histogram()
-              .value(_d => {
-                return _d.avg;
-              })
-              .domain(x.domain())
-              .thresholds(x.ticks(20))(data)
-
-  var y = d3.scaleLinear()
+var y = d3.scaleLinear()
             .range([height, 0])
-            .domain([0, d3.max(bins, (_d) => {return _d.length;})]);
+
+
+function toggle(_attribute) {
+  x.domain(0, d3.max(window.data, (_d) => {return _d.HR; }))
 
 
 
+}
+
+/**
+ * Renders a dropdown menu for selection of attributes which gets charted in the histogram
+ * 
+ */
+function renderDropDown(_items) {
+  var dropDown = d3.select("#dropdown");
   
+  var options = dropDown.selectAll("li")
+                  .data(_items)
+                  .enter()
+                  .append("tr")
+                  .append("a")
+                  .attr('href', '#')
+                  .on('click', (_attribute) => {toggle(_attribute)})
+                  .attr('class', 'teal-text text-darken-2')
+                  .text(_d => _d)
+                  .attr('data-key', (_d) => _d);
+    
+}
+
+
+
+function fitDomains(data, xDomainFn, yDomainFn, tickCount) {
+  tickCount = tickCount | 20
+  x.domain([0, d3.max(data, xDomainFn)]);
+  
+  let bins = d3.histogram()
+              .value(xDomainFn)
+              .domain(x.domain())
+              .thresholds(x.ticks(tickCount))(data);
+  
+  y.domain([0, d3.max(bins, yDomainFn)]);
+  return bins;
+}
+
+
+/**
+ * Renders a d3 histogram chart based on the data provided and a domain function for x axis.
+ * 
+ * data      - data for the histogram chart
+ * xDomainFn - A domain function for plotting the x Axis, takes attributes which it needs to plot on this axis 
+ *             in this case
+ */
+function renderHistogram(data, xDomainFn) {
+  var bins = fitDomains(data, xDomainFn, (_d) => {return _d.length; })
+
   svg.selectAll("rect")
     .data(bins)
     .enter().append("rect")
@@ -56,7 +91,6 @@ function renderChart(data) {
       return height - y(d.length);
     })
     .on('mousemove', (d) => {
-      debugger;
       tooltip
         .style("left", d3.event.pageX - 50 + "px")
         .style("top", d3.event.pageY - 70 + "px")
@@ -84,5 +118,12 @@ d3.csv("data/baseball_data.csv", function(error, data) {
     _d.weight = +_d.weight;
     _d.avg = +_d.avg;
   });
-  renderChart(data);
+
+  window.data = data;
+
+  // Render Dropdown menu
+  renderDropDown(_.keys(data[0]));
+
+  // Render histogram
+  renderHistogram(data, (_d) => {return _d.avg});
 });
