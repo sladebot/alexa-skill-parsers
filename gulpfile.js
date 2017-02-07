@@ -1,4 +1,5 @@
 var gulp = require('gulp'),
+  browserify = require('gulp-browserify'),
   nodemon = require('gulp-nodemon'),
   plumber = require('gulp-plumber'),
   livereload = require('gulp-livereload'),
@@ -14,7 +15,18 @@ gulp.task('sass', function () {
 
 gulp.task('watch', function() {
   gulp.watch('./public/css/*.scss', ['sass']);
+  gulp.watch('./src/js/**/*.js', ['scripts']);
 });
+
+gulp.task('scripts', function() {
+  gulp.src('./src/**/*.js')
+    .pipe(browserify({
+      insertGlobals: true,
+      debug: !gulp.env.production
+    }))
+    .pipe(gulp.dest('./public'))
+})
+
 
 gulp.task('develop', function () {
   livereload.listen();
@@ -35,6 +47,7 @@ gulp.task('develop', function () {
 
 gulp.task('default', [
   'sass',
+  'scripts',
   'develop',
   'watch'
 ]);
