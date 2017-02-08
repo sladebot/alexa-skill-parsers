@@ -24,7 +24,7 @@ rect:hover {
   fill: orange; }
 
 rect.bar {
-  fill: brown;
+  fill: #3F51B5;
   margin: 1px; }
 
 .tooltip {

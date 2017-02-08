@@ -5,7 +5,7 @@ var d3 = require("d3"),
 
 var margin = {top: 20, right: 20, bottom: 30, left: 40},
     width = 960 - margin.left - margin.right,
-    height = 500 - margin.top - margin.bottom;
+    height = 600 - margin.top - margin.bottom;
 
 var tooltip = d3.select(".chart").append("div").attr("class", "tooltip");
 
@@ -16,18 +16,39 @@ var svg = d3.select(".chart").append("svg")
     .attr("transform", 
           "translate(" + margin.left + "," + margin.top + ")");
 
-var x = d3.scaleLinear()
-          .range([0, width]);
-
-var y = d3.scaleLinear()
-            .range([height, 0])
+var x = d3.scaleLinear();
+var y = d3.scaleLinear();
 
 
 function toggle(_attribute) {
-  x.domain(0, d3.max(window.data, (_d) => {return _d.HR; }))
+  var bins = fitDomains(window.data, _d => {return _.get(_d, _attribute)}, _d => {return _d.length}, 10)
+  var rects = svg.selectAll("rect")
+                .data(bins, (_b) => {
+                  return _b.length;
+                });
 
-
-
+  rects.exit()
+    .remove()
+    .enter()
+    .append("rect")
+    .attr("class", "bar")
+    .attr("x", 1)
+    .attr("y", (_d, _i) => {      
+      return y(_d.length);
+    })
+    .attr("height", (_d) => {
+      return height - y(_d.length)
+    })
+    // .attr("y", 0)
+    // .attr("height", function(d) {
+    //   return height - y(d.length);
+    // })
+    // .attr("transform", function(d) {
+    //   return "translate(" + x(d.x0) + "," + y(d.length) + ")"
+    // })
+    // .attr("width", (_) => {return x(d.x1);})
+    // .merge(rects)
+  
 }
 
 /**
@@ -36,32 +57,32 @@ function toggle(_attribute) {
  */
 function renderDropDown(_items) {
   var dropDown = d3.select("#dropdown");
-  
   var options = dropDown.selectAll("li")
                   .data(_items)
                   .enter()
                   .append("tr")
                   .append("a")
                   .attr('href', '#')
-                  .on('click', (_attribute) => {toggle(_attribute)})
+                  .on('click', (_attribute) => {
+                    console.log("Toggled...")
+                    toggle(_attribute)
+                  })
                   .attr('class', 'teal-text text-darken-2')
                   .text(_d => _d)
-                  .attr('data-key', (_d) => _d);
-    
+                  .attr('data-key', (_d) => _d);   
 }
-
-
 
 function fitDomains(data, xDomainFn, yDomainFn, tickCount) {
   tickCount = tickCount | 20
-  x.domain([0, d3.max(data, xDomainFn)]);
-  
+  x.domain([0, d3.max(data, xDomainFn)])
+    .range([0, width]);
   let bins = d3.histogram()
               .value(xDomainFn)
               .domain(x.domain())
               .thresholds(x.ticks(tickCount))(data);
-  
-  y.domain([0, d3.max(bins, yDomainFn)]);
+
+  y.domain([0, d3.max(bins, yDomainFn)])
+    .range([height, 0]);
   return bins;
 }
 
@@ -74,8 +95,7 @@ function fitDomains(data, xDomainFn, yDomainFn, tickCount) {
  *             in this case
  */
 function renderHistogram(data, xDomainFn) {
-  var bins = fitDomains(data, xDomainFn, (_d) => {return _d.length; })
-
+  let bins = fitDomains(data, xDomainFn, (_d) => {return _d.length; })
   svg.selectAll("rect")
     .data(bins)
     .enter().append("rect")
@@ -88,6 +108,7 @@ function renderHistogram(data, xDomainFn) {
       return x(d.x1) - x(d.x0) - 1;
     })
     .attr("height", function(d) {
+      debugger;
       return height - y(d.length);
     })
     .on('mousemove', (d) => {
@@ -125,5 +146,5 @@ d3.csv("data/baseball_data.csv", function(error, data) {
   renderDropDown(_.keys(data[0]));
 
   // Render histogram
-  renderHistogram(data, (_d) => {return _d.avg});
+  renderHistogram(data, (_d) => {return _d.HR});
 });
