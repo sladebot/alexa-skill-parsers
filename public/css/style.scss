@@ -5,6 +5,7 @@
 
 body {
   font: 14px "Roboto";
+	background: #222222;
 }
 
 nav {
@@ -16,6 +17,14 @@ nav {
 
 a {
   color: #00B7FF;
+}
+
+.axis--x, .axis--y {
+	g {
+		text {
+			fill: white;
+		}
+	}
 }
 
 .chart {
@@ -33,7 +42,7 @@ rect:hover{
 }
 
 rect.bar { 
-	fill: #3F51B5; 
+	fill: #039be5; 
 	margin: 1px; 
 }
 

@@ -5,7 +5,7 @@ var d3 = require("d3"),
 
 var margin = {top: 20, right: 20, bottom: 30, left: 40},
     width = 960 - margin.left - margin.right,
-    height = 600 - margin.top - margin.bottom;
+    height = 500 - margin.top - margin.bottom;
 
 var tooltip = d3.select(".chart").append("div").attr("class", "tooltip");
 
@@ -67,7 +67,7 @@ function renderDropDown(_items) {
                     console.log("Toggled...")
                     toggle(_attribute)
                   })
-                  .attr('class', 'teal-text text-darken-2')
+                  .attr('class', 'white-text text-darken-2')
                   .text(_d => _d)
                   .attr('data-key', (_d) => _d);   
 }
@@ -124,10 +124,13 @@ function renderHistogram(data, xDomainFn) {
   // Add X Axis
   svg.append("g")
     .attr("class", "axis axis--x")
+    .attr("font-family", "Roboto")
     .attr("transform", "translate(0," + height + ")")
     .call(d3.axisBottom(x));
   
   svg.append("g")
+    .attr("class", "axis axis--y")
+    .attr("font-family", "Roboto")
     .call(d3.axisLeft(y));
 }
 
