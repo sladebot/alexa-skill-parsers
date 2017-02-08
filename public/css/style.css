@@ -12,6 +12,12 @@ nav .brand-logo {
 a {
   color: #00B7FF; }
 
+.axis--x path, .axis--y path {
+  stroke: white; }
+
+.axis--x g line, .axis--y g line {
+  stroke: white; }
+
 .axis--x g text, .axis--y g text {
   fill: white; }
 

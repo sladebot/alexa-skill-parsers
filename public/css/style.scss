@@ -20,7 +20,13 @@ a {
 }
 
 .axis--x, .axis--y {
+	path {
+		stroke: white;
+	}
 	g {
+		line {
+			stroke: white
+		}
 		text {
 			fill: white;
 		}
