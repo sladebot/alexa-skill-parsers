@@ -2,7 +2,6 @@
 @import url('https://fonts.googleapis.com/css?family=Roboto');
 @import url('https://fonts.googleapis.com/icon?family=Material+Icons');
 
-
 body {
   font: 14px "Roboto";
 	background: #222222;
@@ -35,6 +34,13 @@ a {
 
 .chart {
 	margin-top: 100px;
+}
+
+.chart-types {
+	padding-top: 50px;
+	a {
+		margin: 5px;
+	}
 }
 
 rect {

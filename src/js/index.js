@@ -2,9 +2,11 @@ var $ = jQuery = require('jquery');
 var d3 = require("d3"),
     _ = require("lodash");
 
+const chartContainer = $('#chart-container');
 
-var margin = {top: 20, right: 20, bottom: 30, left: 40},
-    width = 960 - margin.left - margin.right,
+
+var margin = {top: 20, right: 20, bottom: 30, left: 20},
+    width = 820 - margin.left - margin.right,
     height = 500 - margin.top - margin.bottom;
 
 var tooltip = d3.select(".chart").append("div").attr("class", "tooltip");
@@ -18,6 +20,18 @@ var svg = d3.select(".chart").append("svg")
 
 var x = d3.scaleLinear();
 var y = d3.scaleLinear();
+
+function pieChartHandler(__element) {
+  __element.on("click", (e) => {
+    debugger;
+    renderPie(chartContainer.data('bins'))
+  })
+}
+
+function __initHandlers() {
+  let pieChartElem = $("#chart-type--pie");
+  pieChartHandler(pieChartElem)  
+}
 
 
 /**
@@ -88,10 +102,73 @@ function fitDomains(data, xDomainFn, yDomainFn, tickCount) {
               .value(xDomainFn)
               .domain(x.domain())
               .thresholds(x.ticks(tickCount))(data);
-
+  
   y.domain([0, d3.max(bins, yDomainFn)])
     .range([height, 0]);
+  // Update bin data to chart container
+  chartContainer.data('bins', bins);
   return bins;
+}
+
+
+
+/**
+ * Renders a d3 pie chart.
+ * 
+ * 
+ */
+function renderPie(data) {
+  data = _.map(data, (_d => _d.length));
+  data = _.without(data, 0)
+  let radius = Math.min(width, height) / 2;
+  let color = d3.scaleOrdinal()
+    .range(["#d32f2f", "#c2185b", "#7b1fa2", 
+            "#5e35b1", "#3949ab", "#1e88e5", 
+            "#039be5", "#00acc1", "#00897b", 
+            "#43a047", "#7cb342", "#c0ca33", 
+            "#fdd835", "#ffb300", "#fb8c00", 
+            "#f4511e", "#6d4c41"]);
+
+  let arc = d3.arc()
+    .outerRadius(radius - 10)
+    .innerRadius(0);
+  
+  let labelArc = d3.arc()
+    .outerRadius(radius - 40)
+    .innerRadius(radius - 40);
+  
+  let pie = d3.pie()
+    .sort(null)
+    .value(_d => {
+      return _d;
+    }); // The data will be a histogram data i.e. an array of arrays.
+
+  var svg = d3.select(".pie").append("svg")
+    .attr("width", width)
+    .attr("height", height)
+    .append("g")
+    .attr("transform", `translate(${width/2}, ${height/2})`)
+
+  let g = svg.selectAll(".arc")
+    .data(pie(data))
+    .enter().append("g")
+    .attr("class", "arc");
+
+  g.append("path")
+    .attr("d", arc)
+    .style("fill", (_d) => {
+      return color(_d.data);
+    });
+
+  g.append("text")
+    .attr("transform", _d => {
+      return `translate(${labelArc.centroid(_d)})`
+    })
+    .attr("dy", ".35em")
+    .text(_d => _d.data);
+
+
+      
 }
 
 
@@ -117,7 +194,6 @@ function renderHistogram(data, xDomainFn) {
       return x(d.x1) - x(d.x0) - 1;
     })
     .attr("height", function(d) {
-      debugger;
       return height - y(d.length);
     })
     .on('mousemove', (d) => {
@@ -151,12 +227,9 @@ d3.csv("data/baseball_data.csv", function(error, data) {
     _d.weight = +_d.weight;
     _d.avg = +_d.avg;
   });
-
   window.data = data;
-
-  // Render Dropdown menu
   renderDropDown(_.keys(data[0]));
-
-  // Render histogram
+  // TODO: This function shouldn't be hardcoded ?
   renderHistogram(data, (_d) => {return _d.HR});
+  __initHandlers();
 });
