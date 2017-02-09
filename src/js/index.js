@@ -72,7 +72,7 @@ function renderDropDown(_items) {
                   .append("a")
                   .attr('href', '#')
                   .on('click', (_attribute) => {
-                    console.log("Toggled...")
+                    console.log("Toggled...");
                     toggle(_attribute, window.data)
                   })
                   .attr('class', 'white-text text-darken-2')
@@ -112,6 +112,7 @@ function renderHistogram(data, xDomainFn) {
     .attr("transform", function(d) {
       return "translate(" + x(d.x0) + "," + y(d.length) + ")"
     })
+    .attr("rx", "2px")
     .attr("width", function(d) {
       return x(d.x1) - x(d.x0) - 1;
     })
