@@ -2,7 +2,6 @@
 @import url('https://fonts.googleapis.com/css?family=Roboto');
 @import url('https://fonts.googleapis.com/icon?family=Material+Icons');
 
-
 body {
   font: 14px "Roboto";
 	background: #222222;
@@ -37,11 +36,22 @@ a {
 	margin-top: 100px;
 }
 
+.chart-types {
+	padding-top: 50px;
+	a {
+		margin: 5px;
+	}
+}
+
 rect {
 	-moz-transition: all 0.3s;
 	-webkit-transition: all 0.3s;
 	-o-transition: all 0.3s;
 	transition: all 0.3s;
+	-webkit-box-shadow:2px 2px 3px white; 
+		-moz-box-shadow:2px 2px 3px white;
+				box-shadow:2px 2px 3px white;
+
 }
 rect:hover{
 	fill: orange;
@@ -49,7 +59,7 @@ rect:hover{
 
 rect.bar { 
 	fill: #039be5; 
-	margin: 1px; 
+	border: 0;
 }
 
 .tooltip {
