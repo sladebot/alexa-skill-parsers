@@ -35,7 +35,7 @@ rect:hover {
 
 rect.bar {
   fill: #039be5;
-  margin: 1px; }
+  border: 0; }
 
 .tooltip {
   position: absolute;

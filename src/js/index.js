@@ -20,8 +20,16 @@ var x = d3.scaleLinear();
 var y = d3.scaleLinear();
 
 
-function toggle(_attribute) {
-  var bins = fitDomains(window.data, _d => {return _.get(_d, _attribute)}, _d => {return _d.length}, 10)
+/**
+ * Toggle
+ * 
+ * This is used to update attributes in a histogram with existing data
+ * 
+ * TODO: Make this independent so that it can take data.
+ * 
+ */
+function toggle(_attribute, data) {
+  var bins = fitDomains(data, _d => {return _.get(_d, _attribute)}, _d => {return _d.length}, 10)
   var rects = svg.selectAll("rect")
                 .data(bins, (_b) => {
                   return _b.length;
@@ -65,7 +73,7 @@ function renderDropDown(_items) {
                   .attr('href', '#')
                   .on('click', (_attribute) => {
                     console.log("Toggled...")
-                    toggle(_attribute)
+                    toggle(_attribute, window.data)
                   })
                   .attr('class', 'white-text text-darken-2')
                   .text(_d => _d)
