@@ -9,8 +9,12 @@ body {
 
 nav {
 	.brand-logo {
-		margin-left: 10px;
-		padding: 5px;
+		img {
+			margin: 12px 20px;
+			padding: 5px;
+			height: 40px;
+			width: 50px;
+		}
 	}
 }
 
@@ -31,6 +35,45 @@ a {
 		}
 	}
 }
+
+#attributes {
+	a {
+		width: 100%
+	}
+}
+
+.chart-types {
+	a {
+		width: 100%
+	}
+}
+
+
+.container {
+  margin: 0 auto;
+  max-width: 1280px;
+  width: 90%;
+	@media only screen and (min-width: 601px) {
+			width: 85%;
+	}
+	@media only screen and (min-width: 993px)
+	{
+			width: 90%;
+	}
+}
+
+
+.fixed-action-btn {
+	position: fixed;
+	right: 23px;
+	bottom: 23px;
+	padding-top: 15px;
+	margin-bottom: 0;
+	z-index: 998;
+	bottom: 45px;
+  right: 24px;
+}
+
 
 .chart {
 	margin-top: 100px;

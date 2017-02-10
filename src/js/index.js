@@ -5,9 +5,9 @@ var d3 = require("d3"),
 const chartContainer = $('#chart-container');
 
 var margin = {top: 20, right: 20, bottom: 30, left: 20},
-    chartContainerWidth = d3.select(".chart").style("width") | 800,
+    chartContainerWidth = d3.select(".chart").style("width") | 1040,
     width =  parseInt(chartContainerWidth) - margin.left - margin.right,
-    height = 500 - margin.top - margin.bottom;
+    height = 450 - margin.top - margin.bottom;
 
 var tooltip = d3.select(".chart").append("div").attr("class", "tooltip");
 
@@ -23,7 +23,7 @@ var y = d3.scaleLinear();
 
 function pieChartHandler(__element) {
   __element.on("click", (e) => {
-    renderPie(d3.select(".chart"), chartContainer.data('bins'))
+    renderPie(d3.select(".chart"), chartContainer.data('bins'));
   })
 }
 
@@ -59,16 +59,7 @@ function toggle(_attribute, data) {
     })
     .attr("height", (_d) => {
       return height - y(_d.length)
-    })
-    // .attr("y", 0)
-    // .attr("height", function(d) {
-    //   return height - y(d.length);
-    // })
-    // .attr("transform", function(d) {
-    //   return "translate(" + x(d.x0) + "," + y(d.length) + ")"
-    // })
-    // .attr("width", (_) => {return x(d.x1);})
-    // .merge(rects)
+    });
   
 }
 
@@ -77,20 +68,23 @@ function toggle(_attribute, data) {
  * 
  */
 function renderDropDown(_items) {
-  var dropDown = d3.select("#dropdown");
-  var options = dropDown.selectAll("li")
+  var dropDown = d3.select("#attributes");
+  var options = dropDown.selectAll("a")
                   .data(_items)
                   .enter()
-                  .append("tr")
                   .append("a")
-                  .attr('href', '#')
+                  .attr("class", "waves-effect waves-light btn btn-block")
+                  .attr("href", "#")
                   .on('click', (_attribute) => {
-                    console.log("Toggled...");
                     toggle(_attribute, window.data)
                   })
-                  .attr('class', 'white-text text-darken-2')
-                  .text(_d => _d)
-                  .attr('data-key', (_d) => _d);   
+                  // .attr('class', 'white-text text-darken-2')
+                  .text(_d => {
+                    return _.truncate(_d, {
+                      length: 10
+                    })
+                  })
+                  .attr('data-key', (_d) => _d);
 }
 
 function fitDomains(data, xDomainFn, yDomainFn, tickCount) {
@@ -166,10 +160,7 @@ function renderPie(container, data) {
       return `translate(${labelArc.centroid(_d)})`
     })
     .attr("dy", ".35em")
-    .text(_d => _d.data);
-
-
-      
+    .text(_d => _d.data);     
 }
 
 
@@ -203,6 +194,10 @@ function renderHistogram(data, xDomainFn) {
         .style("top", d3.event.pageY - 70 + "px")
         .style("display", "inline-block")
         .html((d.length) + "<br>");
+    })
+    .on("click", (d) => {
+      // Rendering pie chart from existing bins !
+      renderPie(d3.select(".chart"), chartContainer.data('bins'))
     })
     .on("mouseout", function(d){ tooltip.style("display", "none");});
 
