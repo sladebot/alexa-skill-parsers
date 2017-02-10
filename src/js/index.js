@@ -4,9 +4,9 @@ var d3 = require("d3"),
 
 const chartContainer = $('#chart-container');
 
-
 var margin = {top: 20, right: 20, bottom: 30, left: 20},
-    width = 820 - margin.left - margin.right,
+    chartContainerWidth = d3.select(".chart").style("width") | 800,
+    width =  parseInt(chartContainerWidth) - margin.left - margin.right,
     height = 500 - margin.top - margin.bottom;
 
 var tooltip = d3.select(".chart").append("div").attr("class", "tooltip");
@@ -23,8 +23,7 @@ var y = d3.scaleLinear();
 
 function pieChartHandler(__element) {
   __element.on("click", (e) => {
-    debugger;
-    renderPie(chartContainer.data('bins'))
+    renderPie(d3.select(".chart"), chartContainer.data('bins'))
   })
 }
 
@@ -111,13 +110,13 @@ function fitDomains(data, xDomainFn, yDomainFn, tickCount) {
 }
 
 
-
 /**
  * Renders a d3 pie chart.
  * 
+ * container - Should be a d3 selected container
  * 
  */
-function renderPie(data) {
+function renderPie(container, data) {
   data = _.map(data, (_d => _d.length));
   data = _.without(data, 0)
   let radius = Math.min(width, height) / 2;
@@ -143,13 +142,15 @@ function renderPie(data) {
       return _d;
     }); // The data will be a histogram data i.e. an array of arrays.
 
-  var svg = d3.select(".pie").append("svg")
+  d3.select("svg").remove();
+
+  let g = d3.select(".chart")
+    .append("svg")
     .attr("width", width)
     .attr("height", height)
     .append("g")
     .attr("transform", `translate(${width/2}, ${height/2})`)
-
-  let g = svg.selectAll(".arc")
+    .selectAll(".arc")
     .data(pie(data))
     .enter().append("g")
     .attr("class", "arc");
