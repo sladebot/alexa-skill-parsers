@@ -155,6 +155,7 @@ function renderPie(container, data) {
       return color(_d.data);
     });
 
+
   g.append("text")
     .attr("transform", _d => {
       return `translate(${labelArc.centroid(_d)})`
@@ -172,10 +173,11 @@ function renderPie(container, data) {
  *             in this case
  */
 function renderHistogram(data, xDomainFn) {
-  let bins = fitDomains(data, xDomainFn, (_d) => {return _d.length; })
+  let bins = fitDomains(data, xDomainFn, (_d) => {return _d.length; });
   svg.selectAll("rect")
     .data(bins)
-    .enter().append("rect")
+    .enter()
+    .append("rect")
     .attr("class", "bar")
     .attr("x", 1)
     .attr("transform", function(d) {
@@ -189,17 +191,40 @@ function renderHistogram(data, xDomainFn) {
       return height - y(d.length);
     })
     .on('mousemove', (d) => {
-      tooltip
-        .style("left", d3.event.pageX - 50 + "px")
-        .style("top", d3.event.pageY - 70 + "px")
-        .style("display", "inline-block")
-        .html((d.length) + "<br>");
+      // tooltip
+      //   .style("left", d3.event.pageX - 50 + "px")
+      //   .style("top", d3.event.pageY - 70 + "px")
+      //   .style("display", "inline-block")
+      //   .html((d.length) + "<br>");
     })
     .on("click", (d) => {
       // Rendering pie chart from existing bins !
       renderPie(d3.select(".chart"), chartContainer.data('bins'))
     })
     .on("mouseout", function(d){ tooltip.style("display", "none");});
+
+
+  var formatCount = d3.format(",.0f");
+
+  svg.selectAll("text")
+    .data(bins)
+    .enter()
+    .append("text")
+    .attr("dy", ".75em")
+    .attr("y", (d, i) => {
+      let _yCoordinate = y(d.length) + 5 // Padding offset;
+      return _yCoordinate;
+    })
+    .attr("x", (d) => {
+      debugger;
+      return (x(d.x1) - 15);
+    })
+    .attr("text-anchor", "middle")
+    .attr("fill", "white")
+    .text(_bin => _bin.length)
+    .attr(function(d) {
+      return formatCount(d.length)
+    })
 
 
   // Add X Axis
@@ -214,6 +239,8 @@ function renderHistogram(data, xDomainFn) {
     .attr("font-family", "Roboto")
     .call(d3.axisLeft(y));
 }
+
+var formatCount = d3.format(",.0f");
 
 // get the data
 d3.csv("data/baseball_data.csv", function(error, data) {

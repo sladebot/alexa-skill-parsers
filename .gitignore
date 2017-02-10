@@ -1,5 +1,6 @@
 node_modules/
 public/components
 public/js/**/*.js
+public/css/**/*.css
 .nyc_output
 .sass-cache
