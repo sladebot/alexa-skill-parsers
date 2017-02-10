@@ -2,7 +2,7 @@ var $ = jQuery = require('jquery');
 var d3 = require("d3"),
     _ = require("lodash");
 
-var margin = {top: 20, right: 20, bottom: 30, left: 20},
+var margin = {top: 20, right: 20, bottom: 30, left: 40},
     chartContainerWidth = d3.select(".chart").style("width") | 1040,
     width =  parseInt(chartContainerWidth) - margin.left - margin.right,
     height = 450 - margin.top - margin.bottom,
@@ -39,7 +39,7 @@ function toggle(_attribute, data) {
   let bars = svg.selectAll(".bar")
     .remove()
     .exit()
-    .data(newBins)
+    .data(newBins);
 
   bars.enter()
     .append("rect")
@@ -76,6 +76,14 @@ function toggle(_attribute, data) {
     .attr("font-family", "Roboto")
     .transition()
     .call(d3.axisLeft(y));
+
+  let selectedAttribute = $("#attributes").find("a.disabled").text()
+
+  svg
+    .select(".axis--x-label")
+    .attr("transform", "translate(" + (width/2) + "," + (height + margin.bottom - 2) + ")")
+    .text(selectedAttribute)
+    .style("fill", "white");
 
 }
 
@@ -173,6 +181,7 @@ function renderPie(container, data) {
   g.append("text")
     .attr("transform", _d => `translate(${labelArc.centroid(_d)})`)
     .attr("dy", ".35em")
+    .style("fill", "white")
     .text(_d => _d.data);     
 }
 
@@ -221,6 +230,21 @@ function renderHistogram(data, xDomainFn) {
     .attr("font-family", "Roboto")
     .transition()
     .call(d3.axisLeft(y));
+
+  svg.append("text")
+    .attr("transform", "translate(-30, " +  (height+margin.bottom)/2 + ") rotate(-90)")
+    .text("Frequency")
+    .style("fill", "white")
+
+  let selectedAttribute = $("#attributes").find("a.disabled").text()
+
+  svg
+    .append("text")
+    .attr("transform", "translate(" + (width/2) + "," + (height + margin.bottom - 2) + ")")
+    .attr("class", "axis--x-label")
+    .text(selectedAttribute)
+    .style("fill", "white");
+  
 }
 
 
@@ -245,6 +269,9 @@ function handleHistogramMouseOver(d, i) {
   
   d3.select(this)
     .transition()
+    .attr("height", (_) => {
+      return height - y(d.length);
+    })
     .attr("width", (_) => {
       return x(d.x1) - x(d.x0) - (0.25 * barSpacing);
     })
