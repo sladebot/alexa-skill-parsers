@@ -7,7 +7,8 @@ const chartContainer = $('#chart-container');
 var margin = {top: 20, right: 20, bottom: 30, left: 20},
     chartContainerWidth = d3.select(".chart").style("width") | 1040,
     width =  parseInt(chartContainerWidth) - margin.left - margin.right,
-    height = 450 - margin.top - margin.bottom;
+    height = 450 - margin.top - margin.bottom,
+    barSpacing = 10;
 
 var tooltip = d3.select(".chart").append("div").attr("class", "tooltip");
 
@@ -21,18 +22,6 @@ var svg = d3.select(".chart").append("svg")
 var x = d3.scaleLinear();
 var y = d3.scaleLinear();
 
-function pieChartHandler(__element) {
-  __element.on("click", (e) => {
-    renderPie(d3.select(".chart"), chartContainer.data('bins'));
-  })
-}
-
-function __initHandlers() {
-  let pieChartElem = $("#chart-type--pie");
-  pieChartHandler(pieChartElem)  
-}
-
-
 /**
  * Toggle
  * 
@@ -42,32 +31,60 @@ function __initHandlers() {
  * 
  */
 function toggle(_attribute, data) {
-  var bins = fitDomains(data, _d => {return _.get(_d, _attribute)}, _d => {return _d.length}, 10)
-  var rects = svg.selectAll("rect")
-                .data(bins, (_b) => {
-                  return _b.length;
-                });
-
-  rects.exit()
+  let newBins = fitDomains(data, _d => { return parseInt(_.get(_d, _attribute))}, _d => {return _d.length}, 10)
+  
+  console.log("Got new bins - ", newBins)
+  let bars = svg.selectAll(".bar")
     .remove()
-    .enter()
+    .exit()
+    .data(newBins)
+
+  bars.enter()
     .append("rect")
     .attr("class", "bar")
-    .attr("x", 1)
-    .attr("y", (_d, _i) => {      
-      return y(_d.length);
+    .attr("x", _d => {
+      return x(_d.x1) - 30;
     })
-    .attr("height", (_d) => {
-      return height - y(_d.length)
-    });
+    .attr("y", _d => y(_d.length))
+    .attr("rx", "2px")
+    .attr("height", _d => {
+      console.log("Height - ", height - y(_d.length))
+      debugger;
+      return height - y(_d.length);
+    })
+    .attr("width", function(d) {
+      return x(d.x1) - x(d.x0) - barSpacing;
+    })
+    .attr("height", function(d) {
+      return height - y(d.length);
+    })
+    .on('mouseover', _.throttle(handleHistogramMouseOver, 500))
+    .on("click", (d) => {
+      // Rendering pie chart from existing bins !
+      renderPie(d3.select(".chart"), chartContainer.data('bins'))
+    })
+    .on("mouseout", handleMouseRemove);
+
+
+
+  svg.select(".axis--x")
+    .attr("font-family", "Roboto")
+    .attr("transform", `translate(0, ${height})`)
+    .call(d3.axisBottom(x));
   
+  svg.select(".axis--y")
+    .attr("class", "axis axis--y")
+    .attr("font-family", "Roboto")
+    .call(d3.axisLeft(y));
+
 }
 
 /**
  * Renders a dropdown menu for selection of attributes which gets charted in the histogram
  * 
  */
-function renderDropDown(_items) {
+function listAttributes(_items) {
+  console.log("Items - ", _items)
   var dropDown = d3.select("#attributes");
   var options = dropDown.selectAll("a")
                   .data(_items)
@@ -90,14 +107,16 @@ function renderDropDown(_items) {
 function fitDomains(data, xDomainFn, yDomainFn, tickCount) {
   tickCount = tickCount | 20
   x.domain([0, d3.max(data, xDomainFn)])
-    .range([0, width]);
+    .range([0, width])
+    .nice();
   let bins = d3.histogram()
               .value(xDomainFn)
               .domain(x.domain())
               .thresholds(x.ticks(tickCount))(data);
   
   y.domain([0, d3.max(bins, yDomainFn)])
-    .range([height, 0]);
+    .range([height, 0])
+    .nice();
   // Update bin data to chart container
   chartContainer.data('bins', bins);
   return bins;
@@ -164,7 +183,6 @@ function renderPie(container, data) {
     .text(_d => _d.data);     
 }
 
-
 /**
  * Renders a d3 histogram chart based on the data provided and a domain function for x axis.
  * 
@@ -185,65 +203,83 @@ function renderHistogram(data, xDomainFn) {
     })
     .attr("rx", "2px")
     .attr("width", function(d) {
-      return x(d.x1) - x(d.x0) - 1;
+      return x(d.x1) - x(d.x0) - barSpacing;
     })
     .attr("height", function(d) {
       return height - y(d.length);
     })
-    .on('mousemove', (d) => {
-      // tooltip
-      //   .style("left", d3.event.pageX - 50 + "px")
-      //   .style("top", d3.event.pageY - 70 + "px")
-      //   .style("display", "inline-block")
-      //   .html((d.length) + "<br>");
-    })
+    .on('mouseover', _.throttle(handleHistogramMouseOver, 500))
     .on("click", (d) => {
       // Rendering pie chart from existing bins !
       renderPie(d3.select(".chart"), chartContainer.data('bins'))
     })
-    .on("mouseout", function(d){ tooltip.style("display", "none");});
-
-
-  var formatCount = d3.format(",.0f");
-
-  svg.selectAll("text")
-    .data(bins)
-    .enter()
-    .append("text")
-    .attr("dy", ".75em")
-    .attr("y", (d, i) => {
-      let _yCoordinate = y(d.length) + 5 // Padding offset;
-      return _yCoordinate;
-    })
-    .attr("x", (d) => {
-      debugger;
-      return (x(d.x1) - 15);
-    })
-    .attr("text-anchor", "middle")
-    .attr("fill", "white")
-    .text(_bin => _bin.length)
-    .attr(function(d) {
-      return formatCount(d.length)
-    })
-
+    .on("mouseout", handleMouseRemove);
 
   // Add X Axis
   svg.append("g")
     .attr("class", "axis axis--x")
     .attr("font-family", "Roboto")
     .attr("transform", "translate(0," + height + ")")
+    .transition()
     .call(d3.axisBottom(x));
   
   svg.append("g")
     .attr("class", "axis axis--y")
     .attr("font-family", "Roboto")
+    .transition()
     .call(d3.axisLeft(y));
 }
 
-var formatCount = d3.format(",.0f");
 
-// get the data
-d3.csv("data/baseball_data.csv", function(error, data) {
+/**
+ * Event Handlers
+ * 
+ */
+
+function handleHistogramMouseOver(d, i) {
+  d3.select(this.parentNode)
+    .append("text")
+    .attr("class", `t${d.x0}_${d.x1}_${d.length}`)
+    .attr("x", x(d.x1) - 30)
+    .attr("y", y(d.length))
+    .attr("font-size", "11px")
+    .style("fill", "white")
+    .transition()
+    .delay(100)
+    .text((_) => {
+      return d.length;
+    })
+  
+  d3.select(this)
+    .transition()
+    .attr("width", (_) => {
+      return x(d.x1) - x(d.x0) - (0.25 * barSpacing);
+    })
+}
+
+function handleMouseRemove(d, i) {
+  d3.selectAll(`.t${d.x0}_${d.x1}_${d.length}`)
+    .remove();
+  d3.select(this)
+    .transition()
+    .attr("width", (_) => {
+      return x(d.x1) - x(d.x0) - barSpacing;
+    })
+}
+
+
+function pieChartHandler(__element) {
+  __element.on("click", (e) => {
+    renderPie(d3.select(".chart"), chartContainer.data('bins'));
+  })
+}
+
+function __initHandlers() {
+  let pieChartElem = $("#chart-type--pie");
+  pieChartHandler(pieChartElem)  
+}
+
+d3.csv("data/baseball_data_1.csv", function(error, data) {
   if (error) throw error;
   data.forEach(_d => {
     _d.HR = +_d.HR;
@@ -251,7 +287,7 @@ d3.csv("data/baseball_data.csv", function(error, data) {
     _d.avg = +_d.avg;
   });
   window.data = data;
-  renderDropDown(_.keys(data[0]));
+  listAttributes(_.keys(data[0]));
   // TODO: This function shouldn't be hardcoded ?
   renderHistogram(data, (_d) => {return _d.HR});
   __initHandlers();
