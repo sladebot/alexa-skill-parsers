@@ -2,22 +2,19 @@ var $ = jQuery = require('jquery');
 var d3 = require("d3"),
     _ = require("lodash");
 
-const chartContainer = $('#chart-container');
-
 var margin = {top: 20, right: 20, bottom: 30, left: 20},
     chartContainerWidth = d3.select(".chart").style("width") | 1040,
     width =  parseInt(chartContainerWidth) - margin.left - margin.right,
     height = 450 - margin.top - margin.bottom,
     barSpacing = 10;
 
-var tooltip = d3.select(".chart").append("div").attr("class", "tooltip");
+const chartContainer = $('#chart-container');
 
-var svg = d3.select(".chart").append("svg")
+const svg = d3.select(".chart").append("svg")
     .attr("width", width + margin.left + margin.right)
     .attr("height", height + margin.top + margin.bottom)
     .append("g")
-    .attr("transform", 
-          "translate(" + margin.left + "," + margin.top + ")");
+    .attr("transform", `translate(${margin.left}, ${margin.top})`);
 
 var x = d3.scaleLinear();
 var y = d3.scaleLinear();
@@ -33,7 +30,6 @@ var y = d3.scaleLinear();
 function toggle(_attribute, data) {
   let newBins = fitDomains(data, _d => { return parseInt(_.get(_d, _attribute))}, _d => {return _d.length}, 10)
   
-  console.log("Got new bins - ", newBins)
   let bars = svg.selectAll(".bar")
     .remove()
     .exit()
@@ -48,8 +44,6 @@ function toggle(_attribute, data) {
     .attr("y", _d => y(_d.length))
     .attr("rx", "2px")
     .attr("height", _d => {
-      console.log("Height - ", height - y(_d.length))
-      debugger;
       return height - y(_d.length);
     })
     .attr("width", function(d) {
@@ -58,23 +52,23 @@ function toggle(_attribute, data) {
     .attr("height", function(d) {
       return height - y(d.length);
     })
-    .on('mouseover', _.throttle(handleHistogramMouseOver, 500))
-    .on("click", (d) => {
+    .on('mouseover', _.throttle(handleHistogramMouseOver, 500))    
+    .on("click", (_) => {
       // Rendering pie chart from existing bins !
       renderPie(d3.select(".chart"), chartContainer.data('bins'))
     })
     .on("mouseout", handleMouseRemove);
 
-
-
   svg.select(".axis--x")
     .attr("font-family", "Roboto")
     .attr("transform", `translate(0, ${height})`)
+    .transition()
     .call(d3.axisBottom(x));
   
   svg.select(".axis--y")
     .attr("class", "axis axis--y")
     .attr("font-family", "Roboto")
+    .transition()
     .call(d3.axisLeft(y));
 
 }
@@ -83,26 +77,19 @@ function toggle(_attribute, data) {
  * Renders a dropdown menu for selection of attributes which gets charted in the histogram
  * 
  */
-function listAttributes(_items) {
-  console.log("Items - ", _items)
-  var dropDown = d3.select("#attributes");
-  var options = dropDown.selectAll("a")
-                  .data(_items)
-                  .enter()
-                  .append("a")
-                  .attr("class", "waves-effect waves-light btn btn-block")
-                  .attr("href", "#")
-                  .on('click', (_attribute) => {
-                    toggle(_attribute, window.data)
-                  })
-                  // .attr('class', 'white-text text-darken-2')
-                  .text(_d => {
-                    return _.truncate(_d, {
-                      length: 10
-                    })
-                  })
-                  .attr('data-key', (_d) => _d);
+function listAttributes(data, selectedItem) {
+  let _items =  _.keys(data[0])
+  let dropDown = d3.select("#attributes");
+  let options = dropDown.selectAll("a")
+    .data(_items)
+    .enter()
+    .append("a")
+    .attr("class", "waves-effect waves-light btn btn-block")
+    .attr("href", "#")
+    .on('click', _attribute => toggle(_attribute, data))
+    .text(_d => _.truncate(_d, {length: 10}));
 }
+
 
 function fitDomains(data, xDomainFn, yDomainFn, tickCount) {
   tickCount = tickCount | 20
@@ -110,14 +97,13 @@ function fitDomains(data, xDomainFn, yDomainFn, tickCount) {
     .range([0, width])
     .nice();
   let bins = d3.histogram()
-              .value(xDomainFn)
-              .domain(x.domain())
-              .thresholds(x.ticks(tickCount))(data);
+    .value(xDomainFn)
+    .domain(x.domain())
+    .thresholds(x.ticks(tickCount))(data);
   
   y.domain([0, d3.max(bins, yDomainFn)])
     .range([height, 0])
     .nice();
-  // Update bin data to chart container
   chartContainer.data('bins', bins);
   return bins;
 }
@@ -155,7 +141,7 @@ function renderPie(container, data) {
       return _d;
     }); // The data will be a histogram data i.e. an array of arrays.
 
-  d3.select("svg").remove();
+  d3.select("svg").remove().exit();
 
   let g = d3.select(".chart")
     .append("svg")
@@ -176,9 +162,7 @@ function renderPie(container, data) {
 
 
   g.append("text")
-    .attr("transform", _d => {
-      return `translate(${labelArc.centroid(_d)})`
-    })
+    .attr("transform", _d => `translate(${labelArc.centroid(_d)})`)
     .attr("dy", ".35em")
     .text(_d => _d.data);     
 }
@@ -281,14 +265,15 @@ function __initHandlers() {
 
 d3.csv("data/baseball_data_1.csv", function(error, data) {
   if (error) throw error;
+  // TODO: Automate this cleaning.
   data.forEach(_d => {
     _d.HR = +_d.HR;
     _d.weight = +_d.weight;
-    _d.avg = +_d.avg;
+    _d.height = +_d.height;
   });
-  window.data = data;
-  listAttributes(_.keys(data[0]));
-  // TODO: This function shouldn't be hardcoded ?
-  renderHistogram(data, (_d) => {return _d.HR});
+  let _items =  _.keys(data[0]);
+  let _selectedAttribute = _items[Math.floor(Math.random()*_items.length)]
+  listAttributes(data, _selectedAttribute);
+  renderHistogram(data, (_d) => {return parseInt(_.get(_d, _selectedAttribute))});
   __initHandlers();
 });
