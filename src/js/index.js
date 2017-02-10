@@ -30,6 +30,12 @@ var y = d3.scaleLinear();
 function toggle(_attribute, data) {
   let newBins = fitDomains(data, _d => { return parseInt(_.get(_d, _attribute))}, _d => {return _d.length}, 10)
   
+  d3.selectAll(".btn.btn-block")
+    .classed("disabled", false);
+
+  d3.select(`#${_attribute}`)
+    .classed("disabled", true)
+
   let bars = svg.selectAll(".bar")
     .remove()
     .exit()
@@ -85,9 +91,12 @@ function listAttributes(data, selectedItem) {
     .enter()
     .append("a")
     .attr("class", "waves-effect waves-light btn btn-block")
+    .attr("id", _attr => _attr)
     .attr("href", "#")
     .on('click', _attribute => toggle(_attribute, data))
     .text(_d => _.truncate(_d, {length: 10}));
+  d3.select(`#${selectedItem}`)
+    .classed("disabled", true)
 }
 
 
