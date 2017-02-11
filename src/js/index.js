@@ -2,11 +2,22 @@ var $ = jQuery = require('jquery');
 var d3 = require("d3"),
     _ = require("lodash");
 
+window.lodash = _;
+
 var margin = {top: 20, right: 20, bottom: 30, left: 40},
     chartContainerWidth = d3.select(".chart").style("width") | 1040,
     width =  parseInt(chartContainerWidth) - margin.left - margin.right,
     height = 450 - margin.top - margin.bottom,
     barSpacing = 10;
+
+const color = d3.scaleOrdinal()
+    .range(["#d32f2f", "#c2185b", "#7b1fa2", 
+            "#5e35b1", "#3949ab", "#1e88e5", 
+            "#039be5", "#00acc1", "#00897b", 
+            "#43a047", "#7cb342", "#c0ca33", 
+            "#fdd835", "#ffb300", "#fb8c00", 
+            "#f4511e", "#6d4c41"]);
+
 
 const chartContainer = $('#chart-container');
 
@@ -20,21 +31,16 @@ var x = d3.scaleLinear();
 var y = d3.scaleLinear();
 
 /**
- * Toggle
+ * updateHistogram
  * 
  * This is used to update attributes in a histogram with existing data
  * 
  * TODO: Make this independent so that it can take data.
  * 
  */
-function toggle(_attribute, data) {
+function updateHistogram(_attribute, data) {
   let newBins = fitDomains(data, _d => { return parseInt(_.get(_d, _attribute))}, _d => {return _d.length}, 10)
-  
-  d3.selectAll(".btn.btn-block")
-    .classed("disabled", false);
-
-  d3.select(`#${_attribute}`)
-    .classed("disabled", true)
+  setAttributeSelectionState(_attribute);
 
   let bars = svg.selectAll(".bar")
     .remove()
@@ -101,9 +107,32 @@ function listAttributes(data, selectedItem) {
     .attr("class", "waves-effect waves-light btn btn-block")
     .attr("id", _attr => _attr)
     .attr("href", "#")
-    .on('click', _attribute => toggle(_attribute, data))
+    .on('click', _attribute => {
+      handleAttributeClick(_attribute, data);
+    })
     .text(_d => _.truncate(_d, {length: 10}));
   d3.select(`#${selectedItem}`)
+    .classed("disabled", true)
+}
+
+function handleAttributeClick(_attribute, _data) {
+  let _chartType = chartContainer.data("chart-type")
+  if(_chartType == "histogram") {
+    updateHistogram(_attribute, _data)
+  } else if (_chartType == "pie") {
+    let binData = fitDomains(_data, _d => { return parseInt(_.get(_d, _attribute))}, _d => {return _d.length}, 10)
+    renderPie(binData);
+    setAttributeSelectionState(_attribute);
+  } else {
+    console.log("Unrecognized chart")
+  }
+}
+
+function setAttributeSelectionState(_selection) {
+  d3.selectAll(".btn.btn-block")
+    .classed("disabled", false);
+
+  d3.select(`#${_selection}`)
     .classed("disabled", true)
 }
 
@@ -125,25 +154,44 @@ function fitDomains(data, xDomainFn, yDomainFn, tickCount) {
   return bins;
 }
 
-
 /**
  * Renders a d3 pie chart.
  * 
  * container - Should be a d3 selected container
  * 
  */
-function renderPie(container, data) {
-  data = _.map(data, (_d => _d.length));
-  data = _.without(data, 0)
-  let radius = Math.min(width, height) / 2;
-  let color = d3.scaleOrdinal()
-    .range(["#d32f2f", "#c2185b", "#7b1fa2", 
-            "#5e35b1", "#3949ab", "#1e88e5", 
-            "#039be5", "#00acc1", "#00897b", 
-            "#43a047", "#7cb342", "#c0ca33", 
-            "#fdd835", "#ffb300", "#fb8c00", 
-            "#f4511e", "#6d4c41"]);
+function renderPie(binData) {
+  let selectedAttribute = $("#attributes").find("a.disabled").text()
+  /**
+   * Filtering Data
+   */
+  
+  // 1. Removing all 0 and -ve values
+  _.remove(binData, (_bin) => {
+    return _bin.length == 0 || _.get(_bin, selectedAttribute) <= 0
+  });
 
+  // 2. Formatting data for relevance
+  let formattedPieData = _.map(binData, _bin => {
+    let minData = _.minBy(_bin, selectedAttribute);
+    let maxData = _.maxBy(_bin, selectedAttribute);
+    let _dataMap =  {
+      value: _bin.length,
+      min: _.get(minData, selectedAttribute),
+      max: _.get(maxData, selectedAttribute)
+    }
+    return _dataMap;
+  });
+
+  // 3. Taking first 10 elements
+  formattedPieData = _.take(formattedPieData, 7);
+
+  let radius = Math.min(width, height) / 2;
+  
+  // Removing existing SVG
+  d3.select("svg").remove().exit();
+  
+  // Building Pie Chart
   let arc = d3.arc()
     .outerRadius(radius - 10)
     .innerRadius(0);
@@ -153,12 +201,7 @@ function renderPie(container, data) {
     .innerRadius(radius - 40);
   
   let pie = d3.pie()
-    .sort(null)
-    .value(_d => {
-      return _d;
-    }); // The data will be a histogram data i.e. an array of arrays.
-
-  d3.select("svg").remove().exit();
+    .value(_d => _d.value);
 
   let g = d3.select(".chart")
     .append("svg")
@@ -167,22 +210,32 @@ function renderPie(container, data) {
     .append("g")
     .attr("transform", `translate(${width/2}, ${height/2})`)
     .selectAll(".arc")
-    .data(pie(data))
+    .data(pie(formattedPieData))
     .enter().append("g")
     .attr("class", "arc");
 
   g.append("path")
     .attr("d", arc)
-    .style("fill", (_d) => {
-      return color(_d.data);
-    });
+    .on('click', (e) => {
+      // TODO: Figure this out !!
+      // updateHistogram(selectedAttribute, chartContainer.data("data"))
+    })
+    .style("fill", _d => color(_d.data.value));
 
 
   g.append("text")
     .attr("transform", _d => `translate(${labelArc.centroid(_d)})`)
     .attr("dy", ".35em")
     .style("fill", "white")
-    .text(_d => _d.data);     
+    .text(_d => {
+      if(_d.data.value > 100) {
+        return `${_d.data.min} - ${_d.data.max}`
+      } else {
+        return `< ${_d.data.max}`
+      }
+      
+    });
+
 }
 
 /**
@@ -194,6 +247,7 @@ function renderPie(container, data) {
  */
 function renderHistogram(data, xDomainFn) {
   let bins = fitDomains(data, xDomainFn, (_d) => {return _d.length; });
+  chartContainer.data('chart-type', 'histogram')
   svg.selectAll("rect")
     .data(bins)
     .enter()
@@ -290,13 +344,25 @@ function handleMouseRemove(d, i) {
 
 function pieChartHandler(__element) {
   __element.on("click", (e) => {
-    renderPie(d3.select(".chart"), chartContainer.data('bins'));
+    // Set chartType as "pie"
+    chartContainer.data('chart-type', 'pie')
+    renderPie(chartContainer.data('bins'));
+  })
+}
+
+function histogramHandler(__element) {
+  __element.on("click", (e) => {
+    // Set chartType as "histogram"
+    chartContainer.data('chart-type', 'histogram');
+    // TODO: Render histogram on this !
   })
 }
 
 function __initHandlers() {
   let pieChartElem = $("#chart-type--pie");
-  pieChartHandler(pieChartElem)  
+  let histogramElem = $("#chart-type--histogram");
+  pieChartHandler(pieChartElem);
+  histogramHandler(histogramElem);
 }
 
 d3.csv("data/baseball_data_1.csv", function(error, data) {
@@ -307,6 +373,7 @@ d3.csv("data/baseball_data_1.csv", function(error, data) {
     _d.weight = +_d.weight;
     _d.height = +_d.height;
   });
+  chartContainer.data("data", data);
   let _items =  _.keys(data[0]);
   let _selectedAttribute = _items[Math.floor(Math.random()*_items.length)]
   listAttributes(data, _selectedAttribute);
