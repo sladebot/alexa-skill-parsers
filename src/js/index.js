@@ -189,7 +189,8 @@ function renderHistogram(data, xDomainFn) {
     .on('mouseover', _.throttle(handleHistogramMouseOver, 500))
     .on("click", (d) => {
       // Rendering pie chart from existing bins !
-      renderPie(d3.select(".chart"), chartContainer.data('bins'))
+      renderPie(chartContainer.data('bins'));
+      selectSelectors()
     })
     .on("mouseout", handleMouseRemove);
 
@@ -239,7 +240,7 @@ function updateHistogram(_attribute, data) {
     .remove()
     .exit()
     .data(newBins);
-
+  
   bars.enter()
     .append("rect")
     .attr("class", "bar")
@@ -258,8 +259,9 @@ function updateHistogram(_attribute, data) {
       return height - y(d.length);
     })
     .on('mouseover', _.throttle(handleHistogramMouseOver, 500)) 
-    .on("click", (_) => {
-      renderPie(d3.select(".chart"), chartContainer.data('bins'));
+    .on("click", (e) => {
+      renderPie(chartContainer.data('data'));
+      selectSelectors();
     })
     .on("mouseout", handleMouseRemove);
 
@@ -355,7 +357,8 @@ function histogramHandler(__element) {
     // Set chartType as "histogram"
     selectSelectors();
     chartContainer.data('chart-type', 'histogram');
-    // TODO: Render histogram on this !
+    let _selectedAttribute = $("#attributes").find("a.disabled").text();
+    updateHistogram(_selectedAttribute, chartContainer.data("data"))
   })
 }
 
@@ -381,7 +384,9 @@ function pieChartHandler(__element) {
  * Pie Chart event handlers -- END
  */
 
-
+/**
+ * Toggles enable/disable for chart type selectors
+ */
 function selectSelectors() {
   $(".chart-types").find(".chart-type--selectors").find("a").toggleClass("disabled");
 }
