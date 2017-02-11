@@ -353,6 +353,7 @@ function handleMouseRemove(d, i) {
 function histogramHandler(__element) {
   __element.on("click", (e) => {
     // Set chartType as "histogram"
+    selectSelectors();
     chartContainer.data('chart-type', 'histogram');
     // TODO: Render histogram on this !
   })
@@ -370,6 +371,7 @@ function histogramHandler(__element) {
 
 function pieChartHandler(__element) {
   __element.on("click", (e) => {
+    selectSelectors();
     chartContainer.data('chart-type', 'pie')
     renderPie(chartContainer.data('bins'));
   })
@@ -378,6 +380,11 @@ function pieChartHandler(__element) {
 /**
  * Pie Chart event handlers -- END
  */
+
+
+function selectSelectors() {
+  $(".chart-types").find(".chart-type--selectors").find("a").toggleClass("disabled");
+}
 
 /**
  * __init event handlers
