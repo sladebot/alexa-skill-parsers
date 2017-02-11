@@ -18,7 +18,7 @@ const color = d3.scaleOrdinal()
 
 const chartContainer = $('#chart-container');
 
-const svg = d3.select(".chart").append("svg")
+var svg = d3.select(".chart").append("svg")
     .attr("width", width + margin.left + margin.right)
     .attr("height", height + margin.top + margin.bottom)
     .append("g")
@@ -140,7 +140,8 @@ function renderPie(binData) {
     .attr("d", arc)
     .on('click', (e) => {
       // TODO: Figure this out !!
-      // updateHistogram(selectedAttribute, chartContainer.data("data"))
+      selectSelectors();
+      updateHistogram(selectedAttribute, chartContainer.data("data"))
     })
     .style("fill", _d => color(_d.data.value));
 
@@ -236,12 +237,17 @@ function updateHistogram(_attribute, data) {
   let newBins = fitDomains(data, _d => { return parseInt(_.get(_d, _attribute))}, _d => {return _d.length}, 10)
   setAttributeSelectionState(_attribute);
 
-  let bars = svg.selectAll(".bar")
-    .remove()
-    .exit()
-    .data(newBins);
+  d3.selectAll("svg").remove();
+
+  var svgNew = d3.select(".chart").append("svg")
+    .attr("width", width + margin.left + margin.right)
+    .attr("height", height + margin.top + margin.bottom)
+    .append("g")
+    .attr("transform", `translate(${margin.left}, ${margin.top})`);
   
-  bars.enter()
+  svgNew.selectAll("rect")
+    .data(newBins)
+    .enter()
     .append("rect")
     .attr("class", "bar")
     .attr("x", _d => {
@@ -260,27 +266,31 @@ function updateHistogram(_attribute, data) {
     })
     .on('mouseover', _.throttle(handleHistogramMouseOver, 500)) 
     .on("click", (e) => {
-      renderPie(chartContainer.data('data'));
-      selectSelectors();
+      renderPie(chartContainer.data('bins'));
+      selectSelectors()
     })
     .on("mouseout", handleMouseRemove);
 
-  svg.select(".axis--x")
+
+  svgNew.append("g")
+    .attr("class", "axis axis--x")
     .attr("font-family", "Roboto")
-    .attr("transform", `translate(0, ${height})`)
+    .attr("transform", "translate(0," + height + ")")
     .transition()
     .call(d3.axisBottom(x));
   
-  svg.select(".axis--y")
+  svgNew.append("g")
     .attr("class", "axis axis--y")
     .attr("font-family", "Roboto")
     .transition()
     .call(d3.axisLeft(y));
 
+
   let selectedAttribute = $("#attributes").find("a.disabled").text()
 
-  svg.select(".axis--x-label")
+  svgNew.append("text")
     .attr("transform", "translate(" + (width/2) + "," + (height + margin.bottom - 2) + ")")
+    .attr("class", "axis--x-label")
     .text(selectedAttribute)
     .style("fill", "white");
 
