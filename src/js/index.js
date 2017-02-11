@@ -2,8 +2,6 @@ var $ = jQuery = require('jquery');
 var d3 = require("d3"),
     _ = require("lodash");
 
-window.lodash = _;
-
 var margin = {top: 20, right: 20, bottom: 30, left: 40},
     chartContainerWidth = d3.select(".chart").style("width") | 1040,
     width =  parseInt(chartContainerWidth) - margin.left - margin.right,
@@ -18,7 +16,6 @@ const color = d3.scaleOrdinal()
             "#fdd835", "#ffb300", "#fb8c00", 
             "#f4511e", "#6d4c41"]);
 
-
 const chartContainer = $('#chart-container');
 
 const svg = d3.select(".chart").append("svg")
@@ -31,70 +28,7 @@ var x = d3.scaleLinear();
 var y = d3.scaleLinear();
 
 /**
- * updateHistogram
- * 
- * This is used to update attributes in a histogram with existing data
- * 
- * TODO: Make this independent so that it can take data.
- * 
- */
-function updateHistogram(_attribute, data) {
-  let newBins = fitDomains(data, _d => { return parseInt(_.get(_d, _attribute))}, _d => {return _d.length}, 10)
-  setAttributeSelectionState(_attribute);
-
-  let bars = svg.selectAll(".bar")
-    .remove()
-    .exit()
-    .data(newBins);
-
-  bars.enter()
-    .append("rect")
-    .attr("class", "bar")
-    .attr("x", _d => {
-      return x(_d.x1) - 30;
-    })
-    .attr("y", _d => y(_d.length))
-    .attr("rx", "2px")
-    .attr("height", _d => {
-      return height - y(_d.length);
-    })
-    .attr("width", function(d) {
-      return x(d.x1) - x(d.x0) - barSpacing;
-    })
-    .attr("height", function(d) {
-      return height - y(d.length);
-    })
-    .on('mouseover', _.throttle(handleHistogramMouseOver, 500))    
-    .on("click", (_) => {
-      // Rendering pie chart from existing bins !
-      renderPie(d3.select(".chart"), chartContainer.data('bins'))
-    })
-    .on("mouseout", handleMouseRemove);
-
-  svg.select(".axis--x")
-    .attr("font-family", "Roboto")
-    .attr("transform", `translate(0, ${height})`)
-    .transition()
-    .call(d3.axisBottom(x));
-  
-  svg.select(".axis--y")
-    .attr("class", "axis axis--y")
-    .attr("font-family", "Roboto")
-    .transition()
-    .call(d3.axisLeft(y));
-
-  let selectedAttribute = $("#attributes").find("a.disabled").text()
-
-  svg
-    .select(".axis--x-label")
-    .attr("transform", "translate(" + (width/2) + "," + (height + margin.bottom - 2) + ")")
-    .text(selectedAttribute)
-    .style("fill", "white");
-
-}
-
-/**
- * Renders a dropdown menu for selection of attributes which gets charted in the histogram
+ * Renders menus for attribute selection for data binning
  * 
  */
 function listAttributes(data, selectedItem) {
@@ -115,19 +49,6 @@ function listAttributes(data, selectedItem) {
     .classed("disabled", true)
 }
 
-function handleAttributeClick(_attribute, _data) {
-  let _chartType = chartContainer.data("chart-type")
-  if(_chartType == "histogram") {
-    updateHistogram(_attribute, _data)
-  } else if (_chartType == "pie") {
-    let binData = fitDomains(_data, _d => { return parseInt(_.get(_d, _attribute))}, _d => {return _d.length}, 10)
-    renderPie(binData);
-    setAttributeSelectionState(_attribute);
-  } else {
-    console.log("Unrecognized chart")
-  }
-}
-
 function setAttributeSelectionState(_selection) {
   d3.selectAll(".btn.btn-block")
     .classed("disabled", false);
@@ -136,7 +57,9 @@ function setAttributeSelectionState(_selection) {
     .classed("disabled", true)
 }
 
-
+/**
+ * Sets up xScale and yScale and returns binned data.
+ */
 function fitDomains(data, xDomainFn, yDomainFn, tickCount) {
   tickCount = tickCount | 20
   x.domain([0, d3.max(data, xDomainFn)])
@@ -165,7 +88,6 @@ function renderPie(binData) {
   /**
    * Filtering Data
    */
-  
   // 1. Removing all 0 and -ve values
   _.remove(binData, (_bin) => {
     return _bin.length == 0 || _.get(_bin, selectedAttribute) <= 0
@@ -301,10 +223,97 @@ function renderHistogram(data, xDomainFn) {
   
 }
 
+/**
+ * updateHistogram
+ * 
+ * This is used to update attributes in a histogram with existing data
+ * 
+ * TODO: Make this independent so that it can take data.
+ * 
+ */
+function updateHistogram(_attribute, data) {
+  let newBins = fitDomains(data, _d => { return parseInt(_.get(_d, _attribute))}, _d => {return _d.length}, 10)
+  setAttributeSelectionState(_attribute);
+
+  let bars = svg.selectAll(".bar")
+    .remove()
+    .exit()
+    .data(newBins);
+
+  bars.enter()
+    .append("rect")
+    .attr("class", "bar")
+    .attr("x", _d => {
+      return x(_d.x1) - 30;
+    })
+    .attr("y", _d => y(_d.length))
+    .attr("rx", "2px")
+    .attr("height", _d => {
+      return height - y(_d.length);
+    })
+    .attr("width", function(d) {
+      return x(d.x1) - x(d.x0) - barSpacing;
+    })
+    .attr("height", function(d) {
+      return height - y(d.length);
+    })
+    .on('mouseover', _.throttle(handleHistogramMouseOver, 500)) 
+    .on("click", (_) => {
+      renderPie(d3.select(".chart"), chartContainer.data('bins'));
+    })
+    .on("mouseout", handleMouseRemove);
+
+  svg.select(".axis--x")
+    .attr("font-family", "Roboto")
+    .attr("transform", `translate(0, ${height})`)
+    .transition()
+    .call(d3.axisBottom(x));
+  
+  svg.select(".axis--y")
+    .attr("class", "axis axis--y")
+    .attr("font-family", "Roboto")
+    .transition()
+    .call(d3.axisLeft(y));
+
+  let selectedAttribute = $("#attributes").find("a.disabled").text()
+
+  svg.select(".axis--x-label")
+    .attr("transform", "translate(" + (width/2) + "," + (height + margin.bottom - 2) + ")")
+    .text(selectedAttribute)
+    .style("fill", "white");
+
+}
+
 
 /**
  * Event Handlers
  * 
+ */
+
+/**
+ * Chart Type Selector event handlers -- START
+ */
+
+function handleAttributeClick(_attribute, _data) {
+  let _chartType = chartContainer.data("chart-type")
+  if(_chartType == "histogram") {
+    updateHistogram(_attribute, _data)
+  } else if (_chartType == "pie") {
+    let binData = fitDomains(_data, _d => { return parseInt(_.get(_d, _attribute))}, _d => {return _d.length}, 10)
+    renderPie(binData);
+    setAttributeSelectionState(_attribute);
+  } else {
+    console.log("Unrecognized chart")
+  }
+}
+
+/**
+ * Chart Type Selector event handlers -- END
+ */
+
+
+/**
+ * Histogram event handlers -- START
  */
 
 function handleHistogramMouseOver(d, i) {
@@ -341,15 +350,6 @@ function handleMouseRemove(d, i) {
     })
 }
 
-
-function pieChartHandler(__element) {
-  __element.on("click", (e) => {
-    // Set chartType as "pie"
-    chartContainer.data('chart-type', 'pie')
-    renderPie(chartContainer.data('bins'));
-  })
-}
-
 function histogramHandler(__element) {
   __element.on("click", (e) => {
     // Set chartType as "histogram"
@@ -358,12 +358,41 @@ function histogramHandler(__element) {
   })
 }
 
+
+/**
+ * Histogram event handlers -- END
+ */
+
+
+/**
+ * Pie Chart event handlers -- START
+ */
+
+function pieChartHandler(__element) {
+  __element.on("click", (e) => {
+    chartContainer.data('chart-type', 'pie')
+    renderPie(chartContainer.data('bins'));
+  })
+}
+
+/**
+ * Pie Chart event handlers -- END
+ */
+
+/**
+ * __init event handlers
+ */
+
 function __initHandlers() {
   let pieChartElem = $("#chart-type--pie");
   let histogramElem = $("#chart-type--histogram");
   pieChartHandler(pieChartElem);
   histogramHandler(histogramElem);
 }
+
+/**
+ * Read data from remote for plotting charts
+ */
 
 d3.csv("data/baseball_data_1.csv", function(error, data) {
   if (error) throw error;
@@ -375,7 +404,9 @@ d3.csv("data/baseball_data_1.csv", function(error, data) {
   });
   chartContainer.data("data", data);
   let _items =  _.keys(data[0]);
-  let _selectedAttribute = _items[Math.floor(Math.random()*_items.length)]
+  //TODO: Something is going wrong when default selection is height
+  // let _selectedAttribute = _items[Math.floor(Math.random()*_items.length)] 
+  let _selectedAttribute = "HR";
   listAttributes(data, _selectedAttribute);
   renderHistogram(data, (_d) => {return parseInt(_.get(_d, _selectedAttribute))});
   __initHandlers();
