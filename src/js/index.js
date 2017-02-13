@@ -3,16 +3,17 @@ var d3 = require("d3"),
     _ = require("lodash"),
     drag = require("d3-drag");
 
+
 var FDG = require("./charts/fdg");
 
 var margin = {top: 20, right: 20, bottom: 30, left: 40},
     chartContainerWidth = d3.select(".chart").style("width") || 1040,
     width =  parseInt(chartContainerWidth) - margin.left - margin.right,
-    height = 450 - margin.top - margin.bottom,
+    height = 500 - margin.top - margin.bottom,
     barSpacing = 10,
     startX = 0;
 
-const color = d3.scaleOrdinal()
+const color = d3.scaleOrdinal(d3.schemeCategory20)
     .range(["#d32f2f", "#c2185b", "#7b1fa2", 
             "#5e35b1", "#3949ab", "#1e88e5", 
             "#039be5", "#00acc1", "#00897b", 
@@ -90,29 +91,32 @@ function fitDomains(data, xDomainFn, yDomainFn, tickCount) {
  * 
  */
 function renderPie(binData) {
+  var legendRectSize = 18;
+  var legendSpacing = 1;
   let selectedAttribute = $("#attributes").find("a.disabled").text()
   /**
    * Filtering Data
    */
   // 1. Removing all 0 and -ve values
-  _.remove(binData, (_bin) => {
-    return _bin.length == 0 || _.get(_bin, selectedAttribute) <= 0
-  });
+  // _.remove(binData, (_bin) => {
+  //   return _bin.length == 0 || _.get(_bin, selectedAttribute) <= 0
+  // });
 
   // 2. Formatting data for relevance
   let formattedPieData = _.map(binData, _bin => {
-    let minData = _.minBy(_bin, selectedAttribute);
-    let maxData = _.maxBy(_bin, selectedAttribute);
-    let _dataMap =  {
-      value: _bin.length,
-      min: _.get(minData, selectedAttribute),
-      max: _.get(maxData, selectedAttribute)
-    }
+      let minData = _.minBy(_bin, selectedAttribute);
+      let maxData = _.maxBy(_bin, selectedAttribute);
+      let _dataMap = {}
+      _dataMap["value"] = _bin.length,
+      _dataMap["min"] = _.get(minData, selectedAttribute)
+      _dataMap["max"] = _.get(maxData, selectedAttribute)
+      _dataMap["x0"] = _.get(_bin, "x0")
+      _dataMap["x1"] = _.get(_bin, "x1")
     return _dataMap;
   });
 
   // 3. Taking first 10 elements
-  formattedPieData = _.take(formattedPieData, 7);
+  // formattedPieData = _.take(formattedPieData, 7);
 
   let radius = Math.min(width, height) / 2;
   
@@ -145,25 +149,49 @@ function renderPie(binData) {
   g.append("path")
     .attr("d", arc)
     .on('click', (e) => {
-      // TODO: Figure this out !!
+      e.target = {}
+      e.target.text = "histogram";
       selectSelectors(e);
       updateHistogram(selectedAttribute, chartContainer.data("data"))
     })
     .style("fill", _d => color(_d.data.value));
 
+  var legend = d3.select(".chart").select("svg")
+    .selectAll(".legend")
+    .data(color.domain())
+    .enter()
+    .append("g")
+    .attr("class", "legend")
+    .attr("transform", function(d, i) {
+      let height = legendRectSize + legendSpacing  + 20;
+      let offset = height * color.domain().length / 2;
+      let horz = ( -2 * legendRectSize + 50);
+      let vert = i * height;
+      return `translate(${horz}, ${vert})`
+    })
+  
+  legend.append("rect")
+    .attr("width", legendRectSize + 10)
+    .attr("height", legendRectSize)
+    .style("fill", color)
+    .style("stroke", color)
 
-  g.append("text")
-    .attr("transform", _d => `translate(${labelArc.centroid(_d)})`)
-    .attr("dy", ".35em")
+  g.append('text')
+    .attr("transform", (d, i) => {
+      let height = legendRectSize + legendSpacing + 20;
+      let offset = height * color.domain().length / 2;
+      let horz = ( -2 * legendRectSize - offset - 30);
+      let vert = i * height - offset - 130;
+      return `translate(${horz}, ${vert})`
+    })
+    .attr('x', legendRectSize + legendSpacing)
+    .attr('y', legendRectSize - legendSpacing)
     .style("fill", "white")
     .text(_d => {
-      if(_d.data.value > 100) {
-        return `${_d.data.min} - ${_d.data.max}`
-      } else {
-        return `< ${_d.data.max}`
-      }
-      
+      return `${_d.data.x0} - ${_d.data.x1}`
     });
+
+
 
 }
 
@@ -225,8 +253,9 @@ function drawHistogram(svgElem, binData) {
     .on("contextmenu", (e) => {
       d3.event.preventDefault();
       // Rendering pie chart from existing bins !
-      console.log("Rendering pie  ")
       renderPie(chartContainer.data('bins'));
+      e.target = {}
+      e.target.text = "pie";
       selectSelectors(e)
     })
     .on("mouseleave", handleMouseRemove);
@@ -418,12 +447,12 @@ function pieChartHandler(__element) {
  * Toggles enable/disable for chart type selectors
  */
 function selectSelectors(event) {
-  let selector = event.target.text.toLowerCase();
-  $(`.chart-type--selectors`).find("a").removeClass("disabled");
-  $(`#chart-type--${selector}`).toggleClass("disabled");
-  
-
-  // $(".chart-types").find(".chart-type--selectors").find("a").toggleClass("disabled");
+  let target = event.target
+  if(target) {
+    let selector = target.text.toLowerCase();
+    $(`.chart-type--selectors`).find("a").removeClass("disabled");
+    $(`#chart-type--${selector}`).toggleClass("disabled");
+  }
 }
 
 /**
