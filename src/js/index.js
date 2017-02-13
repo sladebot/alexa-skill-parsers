@@ -3,6 +3,8 @@ var d3 = require("d3"),
     _ = require("lodash"),
     drag = require("d3-drag");
 
+var FDG = require("./charts/fdg");
+
 var margin = {top: 20, right: 20, bottom: 30, left: 40},
     chartContainerWidth = d3.select(".chart").style("width") || 1040,
     width =  parseInt(chartContainerWidth) - margin.left - margin.right,
@@ -144,7 +146,7 @@ function renderPie(binData) {
     .attr("d", arc)
     .on('click', (e) => {
       // TODO: Figure this out !!
-      selectSelectors();
+      selectSelectors(e);
       updateHistogram(selectedAttribute, chartContainer.data("data"))
     })
     .style("fill", _d => color(_d.data.value));
@@ -220,10 +222,12 @@ function drawHistogram(svgElem, binData) {
       return height - y(d.length);
     })
     .on('mouseenter', _.throttle(handleHistogramMouseOver, 500))
-    .on("click", (d) => {
+    .on("contextmenu", (e) => {
+      d3.event.preventDefault();
       // Rendering pie chart from existing bins !
+      console.log("Rendering pie  ")
       renderPie(chartContainer.data('bins'));
-      selectSelectors()
+      selectSelectors(e)
     })
     .on("mouseleave", handleMouseRemove);
 
@@ -372,10 +376,19 @@ function handleMouseRemove(d, i) {
 function histogramHandler(__element) {
   __element.on("click", (e) => {
     // Set chartType as "histogram"
-    selectSelectors();
+    selectSelectors(e);
     chartContainer.data('chart-type', 'histogram');
     let _selectedAttribute = $("#attributes").find("a.disabled").text();
     updateHistogram(_selectedAttribute, chartContainer.data("data"))
+  })
+}
+
+function forceDirectedGraphHandler(__element) {
+  __element.on("click", (e) => {
+    selectSelectors(e);
+    chartContainer.data('chart-type', 'fdg');
+    let _selectedAttribute = $("#attributes").find("a.disabled").text();
+    FDG.draw(svg, _selectedAttribute)
   })
 }
 
@@ -391,7 +404,7 @@ function histogramHandler(__element) {
 
 function pieChartHandler(__element) {
   __element.on("click", (e) => {
-    selectSelectors();
+    selectSelectors(e);
     chartContainer.data('chart-type', 'pie')
     renderPie(chartContainer.data('bins'));
   })
@@ -404,8 +417,13 @@ function pieChartHandler(__element) {
 /**
  * Toggles enable/disable for chart type selectors
  */
-function selectSelectors() {
-  $(".chart-types").find(".chart-type--selectors").find("a").toggleClass("disabled");
+function selectSelectors(event) {
+  let selector = event.target.text.toLowerCase();
+  $(`.chart-type--selectors`).find("a").removeClass("disabled");
+  $(`#chart-type--${selector}`).toggleClass("disabled");
+  
+
+  // $(".chart-types").find(".chart-type--selectors").find("a").toggleClass("disabled");
 }
 
 /**
@@ -415,8 +433,10 @@ function selectSelectors() {
 function __initHandlers() {
   let pieChartElem = $("#chart-type--pie");
   let histogramElem = $("#chart-type--histogram");
+  let fdgElem = $("#chart-type--fdg");
   pieChartHandler(pieChartElem);
   histogramHandler(histogramElem);
+  forceDirectedGraphHandler(fdgElem);
 }
 
 /**

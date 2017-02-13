@@ -125,3 +125,14 @@ text:hover {
   -moz-box-shadow:    1px 1px 2px 3px #049BE5;  /* Firefox 3.5 - 3.6 */
   box-shadow:         1px 1px 2px 3px #049BE5;  
 }
+
+
+.links line {
+  stroke: #999;
+  stroke-opacity: 0.6;
+}
+
+.nodes circle {
+  stroke: #fff;
+  stroke-width: 1.5px;
+}
