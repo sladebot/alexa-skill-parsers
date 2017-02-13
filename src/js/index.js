@@ -4,10 +4,11 @@ var d3 = require("d3"),
     drag = require("d3-drag");
 
 var margin = {top: 20, right: 20, bottom: 30, left: 40},
-    chartContainerWidth = d3.select(".chart").style("width") | 1040,
+    chartContainerWidth = d3.select(".chart").style("width") || 1040,
     width =  parseInt(chartContainerWidth) - margin.left - margin.right,
     height = 450 - margin.top - margin.bottom,
-    barSpacing = 10;
+    barSpacing = 10,
+    startX = 0;
 
 const color = d3.scaleOrdinal()
     .range(["#d32f2f", "#c2185b", "#7b1fa2", 
@@ -64,7 +65,7 @@ function setAttributeSelectionState(_selection) {
  * Sets up xScale and yScale and returns binned data.
  */
 function fitDomains(data, xDomainFn, yDomainFn, tickCount) {
-  tickCount = tickCount | 20
+  tickCount = tickCount || 15
   x.domain([0, d3.max(data, xDomainFn)])
     .range([0, width])
     .nice();
@@ -165,15 +166,29 @@ function renderPie(binData) {
 }
 
 function dragStart(_e) {
-  console.log("Started with , ", _e)
-}
-
-function dragEnd (_e) {
-  console.log("Ending drag")
+  startX = d3.event.x;
 }
 
 function onDrag (_e){
-  console.log("Dragging....")
+  let selectedAttribute = $("#attributes").find("a.disabled").text();
+  let data = chartContainer.data("data");
+  let xLocation = d3.event.x;
+  let _ticks = chartContainer.data("ticks");
+  if((xLocation > startX) & (_ticks < 60))  {
+    _ticks += Math.log(xLocation - startX)
+    chartContainer.data("ticks", _ticks);
+  } else if((xLocation < startX) & (_ticks > 0)) {
+    _ticks = 5
+    chartContainer.data("ticks", _ticks);
+  }
+  updateHistogram(selectedAttribute, data, chartContainer.data("ticks"));
+}
+
+function dragEnd (_e) {
+  let selectedAttribute = $("#attributes").find("a.disabled").text();
+  let data = chartContainer.data("data");
+  chartContainer.data("ticks", 15);
+  updateHistogram(selectedAttribute, data, chartContainer.data("ticks"));
 }
 
 
@@ -187,7 +202,7 @@ var drag = d3.drag()
  */
 
 function drawHistogram(svgElem, binData) {
-  d3.select("svg").call(drag);
+  d3.select("svg").call(drag).transition();
   svgElem.selectAll("rect")
     .data(binData)
     .enter()
@@ -239,6 +254,7 @@ function drawHistogram(svgElem, binData) {
     .attr("class", "axis--x-label")
     .text(selectedAttribute)
     .style("fill", "white");
+    
 }
 
 
@@ -265,8 +281,8 @@ function renderHistogram(data, xDomainFn) {
  * TODO: Make this independent so that it can take data.
  * 
  */
-function updateHistogram(_attribute, data) {
-  let newBins = fitDomains(data, _d => { return parseInt(_.get(_d, _attribute))}, _d => {return _d.length}, 10)
+function updateHistogram(_attribute, data, ticks) {
+  let newBins = fitDomains(data, _d => { return parseInt(_.get(_d, _attribute))}, _d => {return _d.length}, ticks)
   setAttributeSelectionState(_attribute);
   d3.selectAll("svg").remove();
   var svgNew = d3.select(".chart").append("svg")
@@ -420,6 +436,7 @@ d3.csv("data/data.csv", function(error, data) {
     _d.PAY_AMT3 = +_d.PAY_AMT3;
   });
   chartContainer.data("data", data);
+  chartContainer.data("ticks", 20);
   let _items =  _.keys(data[0]);
   //TODO: Something is going wrong when default selection is height
   // let _selectedAttribute = _items[Math.floor(Math.random()*_items.length)] 
