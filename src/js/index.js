@@ -1,6 +1,7 @@
 var $ = jQuery = require('jquery');
 var d3 = require("d3"),
-    _ = require("lodash");
+    _ = require("lodash"),
+    drag = require("d3-drag");
 
 var margin = {top: 20, right: 20, bottom: 30, left: 40},
     chartContainerWidth = d3.select(".chart").style("width") | 1040,
@@ -22,7 +23,7 @@ var svg = d3.select(".chart").append("svg")
     .attr("width", width + margin.left + margin.right)
     .attr("height", height + margin.top + margin.bottom)
     .append("g")
-    .attr("transform", `translate(${margin.left}, ${margin.top})`);
+    .attr("transform", `translate(${margin.left}, ${margin.top})`)
 
 var x = d3.scaleLinear();
 var y = d3.scaleLinear();
@@ -161,22 +162,36 @@ function renderPie(binData) {
 
 }
 
+function dragStart(_e) {
+  console.log("Started with , ", _e)
+}
+
+function dragEnd (_e) {
+  console.log("Ending drag")
+}
+
+function onDrag (_e){
+  console.log("Dragging....")
+}
+
+
+var drag = d3.drag()
+  .on('start', dragStart)
+  .on('drag', onDrag)
+  .on('end', dragEnd)
+
 /**
- * Renders a d3 histogram chart based on the data provided and a domain function for x axis.
- * 
- * data      - data for the histogram chart
- * xDomainFn - A domain function for plotting the x Axis, takes attributes which it needs to plot on this axis 
- *             in this case
+ * Draw histogram in svg
  */
-function renderHistogram(data, xDomainFn) {
-  let bins = fitDomains(data, xDomainFn, (_d) => {return _d.length; });
-  chartContainer.data('chart-type', 'histogram')
-  svg.selectAll("rect")
-    .data(bins)
+
+function drawHistogram(svgElem, binData) {
+  d3.select("svg").call(drag);
+  svgElem.selectAll("rect")
+    .data(binData)
     .enter()
     .append("rect")
     .attr("class", "bar")
-    .attr("x", 1)
+    .attr("x", 10)
     .attr("transform", function(d) {
       return "translate(" + x(d.x0) + "," + y(d.length) + ")"
     })
@@ -187,41 +202,56 @@ function renderHistogram(data, xDomainFn) {
     .attr("height", function(d) {
       return height - y(d.length);
     })
-    .on('mouseover', _.throttle(handleHistogramMouseOver, 500))
+    .on('mouseenter', _.throttle(handleHistogramMouseOver, 500))
     .on("click", (d) => {
       // Rendering pie chart from existing bins !
       renderPie(chartContainer.data('bins'));
       selectSelectors()
     })
-    .on("mouseout", handleMouseRemove);
+    .on("mouseleave", handleMouseRemove);
 
-  // Add X Axis
-  svg.append("g")
+    // Add X Axis
+  svgElem.append("g")
     .attr("class", "axis axis--x")
     .attr("font-family", "Roboto")
-    .attr("transform", "translate(0," + height + ")")
+    .attr("transform", "translate(10," + height + ")")
     .transition()
     .call(d3.axisBottom(x));
   
-  svg.append("g")
+  svgElem.append("g")
     .attr("class", "axis axis--y")
     .attr("font-family", "Roboto")
     .transition()
     .call(d3.axisLeft(y));
 
-  svg.append("text")
+  svgElem.append("text")
     .attr("transform", "translate(-30, " +  (height+margin.bottom)/2 + ") rotate(-90)")
     .text("Frequency")
     .style("fill", "white")
 
   let selectedAttribute = $("#attributes").find("a.disabled").text()
 
-  svg
+  svgElem
     .append("text")
     .attr("transform", "translate(" + (width/2) + "," + (height + margin.bottom - 2) + ")")
     .attr("class", "axis--x-label")
     .text(selectedAttribute)
     .style("fill", "white");
+}
+
+
+/**
+ * Renders a d3 histogram chart based on the data provided and a domain function for x axis.
+ * 
+ * data      - data for the histogram chart
+ * xDomainFn - A domain function for plotting the x Axis, takes attributes which it needs to plot on this axis 
+ *             in this case
+ */
+function renderHistogram(data, xDomainFn) {
+  let bins = fitDomains(data, xDomainFn, (_d) => {return _d.length; });
+  chartContainer.data('chart-type', 'histogram')
+  d3.select("svg").call(drag);
+  drawHistogram(svg, bins);
   
 }
 
@@ -236,64 +266,13 @@ function renderHistogram(data, xDomainFn) {
 function updateHistogram(_attribute, data) {
   let newBins = fitDomains(data, _d => { return parseInt(_.get(_d, _attribute))}, _d => {return _d.length}, 10)
   setAttributeSelectionState(_attribute);
-
   d3.selectAll("svg").remove();
-
   var svgNew = d3.select(".chart").append("svg")
     .attr("width", width + margin.left + margin.right)
     .attr("height", height + margin.top + margin.bottom)
     .append("g")
     .attr("transform", `translate(${margin.left}, ${margin.top})`);
-  
-  svgNew.selectAll("rect")
-    .data(newBins)
-    .enter()
-    .append("rect")
-    .attr("class", "bar")
-    .attr("x", _d => {
-      return x(_d.x1) - 30;
-    })
-    .attr("y", _d => y(_d.length))
-    .attr("rx", "2px")
-    .attr("height", _d => {
-      return height - y(_d.length);
-    })
-    .attr("width", function(d) {
-      return x(d.x1) - x(d.x0) - barSpacing;
-    })
-    .attr("height", function(d) {
-      return height - y(d.length);
-    })
-    .on('mouseover', _.throttle(handleHistogramMouseOver, 500)) 
-    .on("click", (e) => {
-      renderPie(chartContainer.data('bins'));
-      selectSelectors()
-    })
-    .on("mouseout", handleMouseRemove);
-
-
-  svgNew.append("g")
-    .attr("class", "axis axis--x")
-    .attr("font-family", "Roboto")
-    .attr("transform", "translate(0," + height + ")")
-    .transition()
-    .call(d3.axisBottom(x));
-  
-  svgNew.append("g")
-    .attr("class", "axis axis--y")
-    .attr("font-family", "Roboto")
-    .transition()
-    .call(d3.axisLeft(y));
-
-
-  let selectedAttribute = $("#attributes").find("a.disabled").text()
-
-  svgNew.append("text")
-    .attr("transform", "translate(" + (width/2) + "," + (height + margin.bottom - 2) + ")")
-    .attr("class", "axis--x-label")
-    .text(selectedAttribute)
-    .style("fill", "white");
-
+  drawHistogram(svgNew, newBins)
 }
 
 
@@ -333,21 +312,23 @@ function handleHistogramMouseOver(d, i) {
     .append("text")
     .attr("class", `t${d.x0}_${d.x1}_${d.length}`)
     .attr("x", x(d.x1) - 30)
-    .attr("y", y(d.length))
+    .attr("y", y(d.length) - 10)
     .attr("font-size", "11px")
     .style("fill", "white")
     .transition()
-    .delay(100)
     .text((_) => {
       return d.length;
-    })
+    });
+    
   
   d3.select(this)
-    .transition()
-    .attr("height", (_) => {
-      return height - y(d.length);
+    .attr("height", (__) => {
+      return height - y(d.length) + 10;
     })
-    .attr("width", (_) => {
+    .attr("transform", __ => {
+      return `translate(${x(d.x0)}, ${y(d.length) - 10})`
+    })
+    .attr("width", (__) => {
       return x(d.x1) - x(d.x0) - (0.25 * barSpacing);
     })
 }
@@ -356,7 +337,15 @@ function handleMouseRemove(d, i) {
   d3.selectAll(`.t${d.x0}_${d.x1}_${d.length}`)
     .remove();
   d3.select(this)
+    .attr("height", (_) => {
+      return height - y(d.length);
+    })
     .transition()
+    .delay(20)
+    
+    .attr("transform", __ => {
+      return `translate(${x(d.x0)}, ${y(d.length)})`
+    })    
     .attr("width", (_) => {
       return x(d.x1) - x(d.x0) - barSpacing;
     })
