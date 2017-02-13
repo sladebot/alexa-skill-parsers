@@ -45,7 +45,9 @@ function listAttributes(data, selectedItem) {
     .on('click', _attribute => {
       handleAttributeClick(_attribute, data);
     })
-    .text(_d => _.truncate(_d, {length: 10}));
+    .text(_d => {
+      return _.truncate(_d, {length: 10})
+    });
   d3.select(`#${selectedItem}`)
     .classed("disabled", true)
 }
@@ -405,19 +407,23 @@ function __initHandlers() {
  * Read data from remote for plotting charts
  */
 
-d3.csv("data/baseball_data_1.csv", function(error, data) {
+d3.csv("data/data.csv", function(error, data) {
   if (error) throw error;
   // TODO: Automate this cleaning.
   data.forEach(_d => {
-    _d.HR = +_d.HR;
-    _d.weight = +_d.weight;
-    _d.height = +_d.height;
+    _d.LIMIT_BAL = +_d.LIMIT_BAL;
+    _d.BILL_AMT1 = +_d.BILL_AMT1;
+    _d.BILL_AMT2 = +_d.BILL_AMT2;
+    _d.BILL_AMT3 = +_d.BILL_AMT3;
+    _d.PAY_AMT1 = +_d.PAY_AMT1;
+    _d.PAY_AMT2 = +_d.PAY_AMT2;
+    _d.PAY_AMT3 = +_d.PAY_AMT3;
   });
   chartContainer.data("data", data);
   let _items =  _.keys(data[0]);
   //TODO: Something is going wrong when default selection is height
   // let _selectedAttribute = _items[Math.floor(Math.random()*_items.length)] 
-  let _selectedAttribute = "HR";
+  let _selectedAttribute = "LIMIT_BAL";
   listAttributes(data, _selectedAttribute);
   renderHistogram(data, (_d) => {return parseInt(_.get(_d, _selectedAttribute))});
   __initHandlers();
