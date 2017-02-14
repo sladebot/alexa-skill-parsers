@@ -16,8 +16,8 @@ const x = d3.scaleLinear()
 
 function generateBins(data, xScale, yScale, xDomainFn, yDomainFn, ticks, options) {
   let height = options.height,
-    width = options.width
-  
+    width = options.width;
+
   xScale.domain([0, d3.max(data, xDomainFn)])
     .range([0, width])
     .nice();
@@ -41,63 +41,96 @@ function getMean(node, attribute) {
   })
 }
 
-function findIndex(nodes, node, _attribute) {
-  return _.findIndex(nodes, o => {
-    return o == node
-  });
+function findIndex(nodes, node) {
+  let index = _.findIndex(nodes, (o) => {
+    return o.id == node
+  })
+
+  if(index == -1) {
+    debugger;
+  }
+  return index
 }
 
-function pushData(source, bins, _attribute, nodes, edges, xScale, yScale, xScaleFn, yScaleFn, ticks, options) {
+function getData(source, bins, _attribute, nodes, edges, xScale, yScale, xScaleFn, yScaleFn, ticks, options) {
   nodes = nodes || []
   edges = edges || []
+  counter = 0;
+  let selectedAttribute = options.selectedAttribute;
+  let cacheContainer = options.cacheContainer;
+
   _.each(bins, _bin => {
+    counter += 1
     if(_bin.length > 0) {
-      let _mean = getMean(_bin, _attribute)
-      nodes.push(_mean)
+      let _mean = getMean(_bin, selectedAttribute)
+      nodes.push({id: _mean})
+      let _meanIndex = findIndex(nodes, _mean)
+      let _sourceIndex = findIndex(nodes, source)
       edges.push({
-        source: findIndex(nodes, source, _attribute),
-        target: findIndex(nodes, _mean, _attribute)
+        source: _sourceIndex,
+        target: _meanIndex
       });
+      
       _.each(_bin, _element => {
-        nodes.push(_element);
+        nodes.push({id: _.get(_element, selectedAttribute)});
         edges.push({
-          source: _mean,
-          target: findIndex(nodes, _element, _attribute)
+          source: _meanIndex,
+          target: findIndex(nodes, _.get(_element, selectedAttribute))
         });
       });
 
-      console.log("GBIN SIZE ::", _bin.length);
+      console.log("gBin ::", _bin.length)
 
-      if(_bin > 10000) {
+      if(_bin < 5000) {
         let _gBin = generateBins(_bin, xScale, yScale, xScaleFn, yScaleFn, ticks, options);
-        pushData(_mean, _gBin, _attribute, nodes, edges, xScale, yScale, xScaleFn, yScaleFn, ticks, options); 
+        getData(_mean, _gBin, _attribute, nodes, edges, xScale, yScale, xScaleFn, yScaleFn, ticks, options); 
       }
     }
   });
-
-  return {
+  let _data = {
     "nodes": nodes,
-    "link": edges
+    "links": edges
   }
+  cacheContainer.data("fdg_data", _data);
+  return _data;
 
 }
 
 function generateData(data, xScale, yScale, xScaleFn, yScaleFn, ticks, options) {
   const nodes = []
   const edges = []
-  let _attribute = options.selectedAttribute
-  let binData = generateBins(data, xScale, yScale, xScaleFn, yScaleFn, ticks, options)
-  let sourceMean = getMean(data, _attribute)
-  nodes.push(sourceMean)
-  let _data = pushData(sourceMean, binData, _attribute, nodes, edges, xScale, yScale, xScaleFn, yScaleFn, ticks, options)
-  return _data
+  let _attribute = options.selectedAttribute;
+  let cacheContainer = options.cacheContainer;
+
+  return new Promise(function(resolve, reject) {
+    let cachedData = cacheContainer.data("fdg_data");
+    try {
+      if(cachedData) {
+        return resolve(cachedData)
+      } else {
+        let binData = generateBins(data, xScale, yScale, xScaleFn, yScaleFn, ticks, options)
+        let sourceMean = getMean(data, _attribute)
+        nodes.push({id: sourceMean})
+        return resolve(getData(sourceMean, binData, _attribute, nodes, edges, xScale, yScale, xScaleFn, yScaleFn, ticks, options))
+      }
+      debugger;
+    } catch(e) {
+      debugger;
+      return reject(e);
+    }
+  })  
 }
 
 
 exports.generateData = generateData;
 
-exports.draw = function() {
+
+exports.draw = function(data, xScale, yScale, xScaleFn, yScaleFn, ticks, options) {
   d3.select("svg").remove().exit();
+  let height = options.height;
+  let width = options.width;
+  let cacheContainer = options.cacheContainer;
+  let _attribute = options.selectedAttribute;
   // d3.select(".chart").selectAll("svg").remove();
   var svg = d3.select(".chart").append("svg")
     .attr("width", width + margin.left + margin.right)
@@ -113,62 +146,71 @@ exports.draw = function() {
             "#fdd835", "#ffb300", "#fb8c00", 
             "#f4511e", "#6d4c41"]);
 
-  var simulation = d3.forceSimulation()
-    .force("link", d3.forceLink().id(_d => {
-      return _d.id;
-    }))
+  
+// var color = d3.scaleOrdinal(d3.schemeCategory20);
+
+var simulation = d3.forceSimulation()
+    .force("link", d3.forceLink().id(function(d) { return d.id; }))
     .force("charge", d3.forceManyBody())
     .force("center", d3.forceCenter(width / 2, height / 2));
-  
-  d3.json("data/fdg.json", (_err, _data) => {
-    if (_err) throw _err;
 
-    var link = svg.append("g")
-      .attr("class", "links")
-      .selectAll("line")
-      .data(_data.links)
-      .enter().append("line")
-      .attr("stroke-width", (_d) => {
-        return Math.sqrt(_d.value);
-      })
-    
-    var node = svg.append("g")
-      .attr("class", "nodes")
-      .selectAll("circle")
-      .data(_data.nodes)
-      .enter().append("circle")
-      .attr("r", 5)
-      .attr("fill", (_d) => {
-        return color(_d.group);
-      })
-      .call(d3.drag()
-        .on("start", dragstarted)
-        .on("drag", dragged)
-        .on("end", dragended));
-    
-    node.append("title")
-      .text(_d => _d.id);
-    
-    simulation
-      .nodes(_data.nodes)
-      .on("tick", ticked)
-    
-    simulation
-      .force("link")
-      .links(_data.links);
 
-    function ticked() {
-      link
-        .attr("x1", _d => _d.source.x)
-        .attr("y1", _d => _d.source.y)
-        .attr("x2", _d => _d.target.x)
-        .attr("y2", _d => _d.target.y)
+  generateData(data, xScale, yScale, xScaleFn, yScaleFn, ticks, options)
+    .then(_data => {
+      var link = svg.append("g")
+        .attr("class", "links")
+        .selectAll("line")
+        .data(_data.links)
+        .enter().append("line")
+        .attr("stroke-width", (_d) => {
+          return 1;
+        })
       
-      node
-        .attr("cx", _d => _d.x)
-        .attr("cy", _d => _d.y)
-    }
-  });
+      var node = svg.append("g")
+        .attr("class", "nodes")
+        .selectAll("circle")
+        .data(_data.nodes)
+        .enter().append("circle")
+        .attr("r", 5)
+        .attr("fill", (_d) => {
+          return "red";
+        })
+        .call(d3.drag()
+          .on("start", dragstarted)
+          .on("drag", dragged)
+          .on("end", dragended));
+      
+      node.append("title")
+        .text(_d => {
+          return _d.id
+        });
+      
+      simulation
+        .nodes(_data.nodes)
+        .on("tick", ticked)
+      
+      simulation
+        .force("link")
+        .links(_data.links);
+
+      function ticked() {
+        debugger;
+        link
+          .attr("x1", _d => _d.source.x)
+          .attr("y1", _d => _d.source.y)
+          .attr("x2", _d => _d.target.x)
+          .attr("y2", _d => _d.target.y)
+        
+        node
+          .attr("cx", _d => _d.x)
+          .attr("cy", _d => _d.y)
+      }
+    })
+    .catch(_e => {
+      debugger;
+      console.log("Error happened in promise chain, ", _e)
+    })
+  
 
   function dragstarted(d) {
     if(!d3.event.active) {
