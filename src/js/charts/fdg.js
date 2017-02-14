@@ -57,29 +57,28 @@ function getData(source, bins, _attribute, nodes, edges, xScale, yScale, xScaleF
   edges = edges || []
   counter = 0;
   let selectedAttribute = options.selectedAttribute;
-  let cacheContainer = options.cacheContainer;
 
   _.each(bins, _bin => {
     counter += 1
     if(_bin.length > 0) {
       let _mean = getMean(_bin, selectedAttribute)
-      nodes.push({id: _mean})
-      let _meanIndex = findIndex(nodes, _mean)
-      let _sourceIndex = findIndex(nodes, source)
+      if(_.indexOf(nodes, _mean) == -1) {
+        nodes.push({id: `${_mean}`})
+      }
       edges.push({
-        source: _sourceIndex,
-        target: _meanIndex
+        source: `${source}`,
+        target: `${_mean}`
       });
       
-      _.each(_bin, _element => {
-        nodes.push({id: _.get(_element, selectedAttribute)});
-        edges.push({
-          source: _meanIndex,
-          target: findIndex(nodes, _.get(_element, selectedAttribute))
-        });
-      });
-
-      console.log("gBin ::", _bin.length)
+      // _.each(_bin, _element => {
+      //   if(_.indexOf(nodes, _mean) == -1) {
+      //     nodes.push({id: `${_.get(_element, selectedAttribute)}`});
+      //   }
+      //   edges.push({
+      //     source: `${_mean}`,
+      //     target: `${_.get(_element, selectedAttribute)}`
+      //   });
+      // });
 
       if(_bin < 5000) {
         let _gBin = generateBins(_bin, xScale, yScale, xScaleFn, yScaleFn, ticks, options);
@@ -87,12 +86,10 @@ function getData(source, bins, _attribute, nodes, edges, xScale, yScale, xScaleF
       }
     }
   });
-  let _data = {
+  return {
     "nodes": nodes,
     "links": edges
   }
-  cacheContainer.data("fdg_data", _data);
-  return _data;
 
 }
 
@@ -105,14 +102,10 @@ function generateData(data, xScale, yScale, xScaleFn, yScaleFn, ticks, options) 
   return new Promise(function(resolve, reject) {
     let cachedData = cacheContainer.data("fdg_data");
     try {
-      if(cachedData) {
-        return resolve(cachedData)
-      } else {
-        let binData = generateBins(data, xScale, yScale, xScaleFn, yScaleFn, ticks, options)
-        let sourceMean = getMean(data, _attribute)
-        nodes.push({id: sourceMean})
-        return resolve(getData(sourceMean, binData, _attribute, nodes, edges, xScale, yScale, xScaleFn, yScaleFn, ticks, options))
-      }
+      let binData = generateBins(data, xScale, yScale, xScaleFn, yScaleFn, ticks, options)
+      let sourceMean = getMean(data, _attribute)
+      nodes.push({id: `${sourceMean}`})
+      return resolve(getData(sourceMean, binData, _attribute, nodes, edges, xScale, yScale, xScaleFn, yScaleFn, ticks, options))
       debugger;
     } catch(e) {
       debugger;
