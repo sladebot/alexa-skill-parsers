@@ -1,6 +1,7 @@
 var $ = jQuery = require('jquery');
 var d3 = require("d3"),
     _ = require("lodash"),
+    Promise = require("bluebird"),
     drag = require("d3-drag");
 
 
@@ -10,6 +11,90 @@ var margin = {top: 20, right: 20, bottom: 30, left: 40},
     height = 650 - margin.top - margin.bottom,
     barSpacing = 10,
     startX = 0;
+
+const x = d3.scaleLinear()
+
+function generateBins(data, xScale, yScale, xDomainFn, yDomainFn, ticks, options) {
+  let height = options.height,
+    width = options.width
+  
+  xScale.domain([0, d3.max(data, xDomainFn)])
+    .range([0, width])
+    .nice();
+  
+  let bins = d3.histogram()
+    .value(xDomainFn)
+    .domain(xScale.domain())
+    .thresholds(xScale.ticks(ticks))(data);
+  
+  yScale.domain([0, d3.max[bins, yDomainFn]])
+    .range([height, 0])
+    .nice();
+  
+  return bins
+}
+
+
+function getMean(node, attribute) {
+  return _.meanBy(node, o => {
+    return _.get(o, attribute);
+  })
+}
+
+function findIndex(nodes, node, _attribute) {
+  return _.findIndex(nodes, o => {
+    return o == node
+  });
+}
+
+function pushData(source, bins, _attribute, nodes, edges, xScale, yScale, xScaleFn, yScaleFn, ticks, options) {
+  nodes = nodes || []
+  edges = edges || []
+  _.each(bins, _bin => {
+    if(_bin.length > 0) {
+      let _mean = getMean(_bin, _attribute)
+      nodes.push(_mean)
+      edges.push({
+        source: findIndex(nodes, source, _attribute),
+        target: findIndex(nodes, _mean, _attribute)
+      });
+      _.each(_bin, _element => {
+        nodes.push(_element);
+        edges.push({
+          source: _mean,
+          target: findIndex(nodes, _element, _attribute)
+        });
+      });
+
+      console.log("GBIN SIZE ::", _bin.length);
+
+      if(_bin > 10000) {
+        let _gBin = generateBins(_bin, xScale, yScale, xScaleFn, yScaleFn, ticks, options);
+        pushData(_mean, _gBin, _attribute, nodes, edges, xScale, yScale, xScaleFn, yScaleFn, ticks, options); 
+      }
+    }
+  });
+
+  return {
+    "nodes": nodes,
+    "link": edges
+  }
+
+}
+
+function generateData(data, xScale, yScale, xScaleFn, yScaleFn, ticks, options) {
+  const nodes = []
+  const edges = []
+  let _attribute = options.selectedAttribute
+  let binData = generateBins(data, xScale, yScale, xScaleFn, yScaleFn, ticks, options)
+  let sourceMean = getMean(data, _attribute)
+  nodes.push(sourceMean)
+  let _data = pushData(sourceMean, binData, _attribute, nodes, edges, xScale, yScale, xScaleFn, yScaleFn, ticks, options)
+  return _data
+}
+
+
+exports.generateData = generateData;
 
 exports.draw = function() {
   d3.select("svg").remove().exit();

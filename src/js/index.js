@@ -416,8 +416,18 @@ function forceDirectedGraphHandler(__element) {
   __element.on("click", (e) => {
     selectSelectors(e);
     chartContainer.data('chart-type', 'fdg');
+    let data = chartContainer.data('data');
     let _selectedAttribute = $("#attributes").find("a.disabled").text();
-    FDG.draw(svg, _selectedAttribute)
+    // let xScale = x;
+    // let yScale = y;
+    // let options = {
+    //   selectedAttribute: _selectedAttribute,
+    //   height: height,
+    //   width: width
+    // }
+    // debugger
+    // let _data = FDG.generateData(data, xScale, yScale, (_d) => {return parseInt(_.get(_d, _selectedAttribute))}, _d => {return _d.length}, 20, options)
+    // FDG.draw(svg, _selectedAttribute)
   })
 }
 
