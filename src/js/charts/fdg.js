@@ -55,8 +55,8 @@ function getData(source, bins, _attribute, nodes, edges, xScale, yScale, xScaleF
   nodes = nodes || []
   edges = edges || []
   counter = options.counter || 0;
-  console.log("Recursive counter - ", counter)
   let selectedAttribute = options.selectedAttribute;
+  console.log("Recursing............")
 
   function addNode(value, counter) {
     nodes.push({
@@ -75,20 +75,18 @@ function getData(source, bins, _attribute, nodes, edges, xScale, yScale, xScaleF
   _.each(bins, _bin => {
     if(_bin.length > 0) {
       let _mean = getMean(_bin, selectedAttribute)
-      if(_.indexOf(nodes, _mean) == -1 & (source != _mean)) {
+      if(_.findIndex(nodes, (_n) => {return _n.id == _mean}) == -1) {
         addNode(_mean)
       }
       addEdge(source, _mean);
-
       _.each(_bin, _element => {
-        if(_.indexOf(nodes, _mean) == -1) {
+        if(_.findIndex(nodes, (_n) => {return _n.id == _.get(_element, selectedAttribute)}) == -1) {
           addNode(_.get(_element, selectedAttribute))
         }
         addEdge(_mean, _.get(_element, selectedAttribute))
       });
 
-      if(counter < 40) {
-        console.log("Calling with counter - ", counter)
+      if(counter < 500) {
         options.counter = counter + 1;
         let _gBin = generateBins(_bin, xScale, yScale, xScaleFn, yScaleFn, ticks, options);
         getData(_mean, _gBin, _attribute, nodes, edges, xScale, yScale, xScaleFn, yScaleFn, ticks, options); 
@@ -123,9 +121,6 @@ function generateData(data, xScale, yScale, xScaleFn, yScaleFn, ticks, options) 
 }
 
 
-exports.generateData = generateData;
-
-
 exports.draw = function(data, xScale, yScale, xScaleFn, yScaleFn, ticks, options) {
   d3.select("svg").remove().exit();
   let height = options.height;
@@ -147,15 +142,15 @@ exports.draw = function(data, xScale, yScale, xScaleFn, yScaleFn, ticks, options
             "#fdd835", "#ffb300", "#fb8c00", 
             "#f4511e", "#6d4c41"]);
 
-  
-
 var simulation = d3.forceSimulation()
     .force("link", d3.forceLink().id(function(d) { return d.id; }))
-    .force("charge", d3.forceManyBody())
-    .force("center", d3.forceCenter(width / 2, height / 2))
-    .force("charge", d3.forceManyBody().strength(function() {
-      return -1;
-    }));
+    .force("gravity", d3.forceManyBody().strength(function(_d) {
+      return 10;
+    }))
+    .force("charge", d3.forceManyBody().strength(function(_d) {
+      return -_d.index - 5;
+    }))
+    .force("center", d3.forceCenter(width / 2, height / 2));
 
 
   generateData(data, xScale, yScale, xScaleFn, yScaleFn, ticks, options)
@@ -166,7 +161,7 @@ var simulation = d3.forceSimulation()
         .data(_data.links)
         .enter().append("line")
         .attr("stroke-width", (_d) => {
-          return 1;
+          return _d.index;
         })
       
       var node = svg.append("g")
@@ -238,3 +233,6 @@ var simulation = d3.forceSimulation()
   }
   
 }
+
+
+exports.generateData = generateData;
