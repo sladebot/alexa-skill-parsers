@@ -5,10 +5,10 @@ var d3 = require("d3"),
     drag = require("d3-drag");
 
 
-var margin = {top: 20, right: 20, bottom: 30, left: 40},
+var margin = {top: 10, right: 20, bottom: 30, left: 40},
     chartContainerWidth = d3.select(".chart").style("width") || 1040,
     width =  parseInt(chartContainerWidth) - margin.left - margin.right,
-    height = 650 - margin.top - margin.bottom,
+    height = 500 - margin.top - margin.bottom,
     barSpacing = 10,
     startX = 0;
 
@@ -62,7 +62,7 @@ function getData(source, bins, _attribute, nodes, edges, xScale, yScale, xScaleF
     console.log("BIN ITERATION COUNTER = ", counter)
     if(_bin.length > 0) {
       let _mean = getMean(_bin, selectedAttribute)
-      if(_.indexOf(nodes, _mean) == -1) {
+      if(_.indexOf(nodes, _mean) == -1 & (source != _mean)) {
         nodes.push({id: `${_mean}`})
       }
       edges.push({
@@ -80,7 +80,7 @@ function getData(source, bins, _attribute, nodes, edges, xScale, yScale, xScaleF
         });
       });
 
-      if(counter < 20) {
+      if(counter < 40) {
         console.log("Calling with counter - ", counter)
         options.counter = counter + 1;
         let _gBin = generateBins(_bin, xScale, yScale, xScaleFn, yScaleFn, ticks, options);
@@ -152,7 +152,7 @@ var simulation = d3.forceSimulation()
     .force("charge", d3.forceManyBody())
     .force("center", d3.forceCenter(width / 2, height / 2))
     .force("charge", d3.forceManyBody().strength(function() {
-      return -0.5;
+      return -1;
     }));
 
 
@@ -187,6 +187,7 @@ var simulation = d3.forceSimulation()
         .text(_d => {
           return _d.id
         });
+      
       
       simulation
         .nodes(_data.nodes)

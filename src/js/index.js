@@ -426,7 +426,8 @@ function forceDirectedGraphHandler(__element) {
       width: width,
       cacheContainer: chartContainer
     }
-    FDG.draw(data, xScale, yScale, (_d) => {return parseInt(_.get(_d, _selectedAttribute))}, _d => {return _d.length}, 20, options)
+    let _fdgTicks = 10;
+    FDG.draw(data, xScale, yScale, (_d) => {return parseInt(_.get(_d, _selectedAttribute))}, _d => {return _d.length}, _fdgTicks, options)
   })
 }
 
