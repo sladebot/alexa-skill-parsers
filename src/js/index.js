@@ -415,19 +415,22 @@ function histogramHandler(__element) {
 function forceDirectedGraphHandler(__element) {
   __element.on("click", (e) => {
     selectSelectors(e);
+    let _fdgTicks = 15;
     chartContainer.data('chart-type', 'fdg');
     let data = chartContainer.data('data');
     let _selectedAttribute = $("#attributes").find("a.disabled").text();
-    let xScale = x;
-    let yScale = y;
     let options = {
       selectedAttribute: _selectedAttribute,
       height: height,
       width: width,
-      cacheContainer: chartContainer
+      cacheContainer: chartContainer,
+      xScale: x,
+      yScale: y,
+      xDomainFn: _d => {return parseInt(_.get(_d, _selectedAttribute))},
+      yDomainFn: _d => {return _d.length},
+      ticks: _fdgTicks
     }
-    let _fdgTicks = 15;
-    FDG.draw(data, xScale, yScale, (_d) => {return parseInt(_.get(_d, _selectedAttribute))}, _d => {return _d.length}, _fdgTicks, options)
+    FDG.draw(data, options)
   })
 }
 

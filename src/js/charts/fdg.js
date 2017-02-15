@@ -3,7 +3,16 @@ var d3 = require("d3"),
     _ = require("lodash"),
     Promise = require("bluebird"),
     drag = require("d3-drag");
+    
+const materialColors = [
+  "#d32f2f", "#c2185b", "#7b1fa2", 
+  "#5e35b1", "#3949ab", "#1e88e5", 
+  "#039be5", "#00acc1", "#00897b", 
+  "#43a047", "#7cb342", "#c0ca33", 
+  "#fdd835", "#ffb300", "#fb8c00", 
+  "#f4511e", "#6d4c41"];
 
+const binDepth = 500;
 
 var margin = {top: 10, right: 20, bottom: 30, left: 40},
     chartContainerWidth = d3.select(".chart").style("width") || 1040,
@@ -12,11 +21,14 @@ var margin = {top: 10, right: 20, bottom: 30, left: 40},
     barSpacing = 10,
     startX = 0;
 
-const x = d3.scaleLinear()
-
-function generateBins(data, xScale, yScale, xDomainFn, yDomainFn, ticks, options) {
+function generateBins(data, options) {
   let height = options.height,
-    width = options.width;
+    width = options.width,
+    xScale = options.xScale,
+    yScale = options.yScale,
+    xDomainFn = options.xDomainFn,
+    yDomainFn = options.yDomainFn,
+    ticks = options.ticks;
 
   xScale.domain([0, d3.max(data, xDomainFn)])
     .range([0, width])
@@ -36,27 +48,18 @@ function generateBins(data, xScale, yScale, xDomainFn, yDomainFn, ticks, options
 
 
 function getMean(node, attribute) {
-  return _.meanBy(node, o => {
-    return _.get(o, attribute);
-  })
+  return _.meanBy(node, o => _.get(o, attribute))
 }
 
 function findIndex(nodes, node) {
-  let index = _.findIndex(nodes, (o) => {
-    return o.id == node
-  })
-
-  if(index == -1) {
-  }
-  return index
+  return _.findIndex(nodes, o => o.id == node)
 }
 
-function getData(source, bins, _attribute, nodes, edges, xScale, yScale, xScaleFn, yScaleFn, ticks, options) {
+function getData(source, bins, _attribute, nodes, edges, options) {
   nodes = nodes || []
   edges = edges || []
   counter = options.counter || 0;
   let selectedAttribute = options.selectedAttribute;
-  console.log("Recursing............")
 
   function addNode(value, counter) {
     nodes.push({
@@ -86,10 +89,10 @@ function getData(source, bins, _attribute, nodes, edges, xScale, yScale, xScaleF
         addEdge(_mean, _.get(_element, selectedAttribute))
       });
 
-      if(counter < 500) {
+      if(counter < binDepth) {
         options.counter = counter + 1;
-        let _gBin = generateBins(_bin, xScale, yScale, xScaleFn, yScaleFn, ticks, options);
-        getData(_mean, _gBin, _attribute, nodes, edges, xScale, yScale, xScaleFn, yScaleFn, ticks, options); 
+        let _gBin = generateBins(_bin, options);
+        getData(_mean, _gBin, _attribute, nodes, edges, options); 
       }
       
     }
@@ -101,19 +104,17 @@ function getData(source, bins, _attribute, nodes, edges, xScale, yScale, xScaleF
 
 }
 
-function generateData(data, xScale, yScale, xScaleFn, yScaleFn, ticks, options) {
+function generateData(data, options) {
   const nodes = []
   const edges = []
   let _attribute = options.selectedAttribute;
-  let cacheContainer = options.cacheContainer;
 
   return new Promise(function(resolve, reject) {
-    let cachedData = cacheContainer.data("fdg_data");
     try {
-      let binData = generateBins(data, xScale, yScale, xScaleFn, yScaleFn, ticks, options)
+      let binData = generateBins(data, options)
       let sourceMean = getMean(data, _attribute)
       nodes.push({id: `${sourceMean}`})
-      return resolve(getData(sourceMean, binData, _attribute, nodes, edges, xScale, yScale, xScaleFn, yScaleFn, ticks, options))
+      return resolve(getData(sourceMean, binData, _attribute, nodes, edges, options))
     } catch(e) {
       return reject(e);
     }
@@ -121,13 +122,12 @@ function generateData(data, xScale, yScale, xScaleFn, yScaleFn, ticks, options) 
 }
 
 
-exports.draw = function(data, xScale, yScale, xScaleFn, yScaleFn, ticks, options) {
+exports.draw = function(data, options) {
   d3.select("svg").remove().exit();
-  let height = options.height;
-  let width = options.width;
-  let cacheContainer = options.cacheContainer;
+  let height = options.height,
+    width = options.width;
+
   let _attribute = options.selectedAttribute;
-  // d3.select(".chart").selectAll("svg").remove();
   var svg = d3.select(".chart").append("svg")
     .attr("width", width + margin.left + margin.right)
     .attr("height", height + margin.top + margin.bottom)
@@ -135,34 +135,25 @@ exports.draw = function(data, xScale, yScale, xScaleFn, yScaleFn, ticks, options
     .attr("transform", `translate(${margin.left}, ${margin.top})`);
   
   const color = d3.scaleOrdinal()
-    .range(["#d32f2f", "#c2185b", "#7b1fa2", 
-            "#5e35b1", "#3949ab", "#1e88e5", 
-            "#039be5", "#00acc1", "#00897b", 
-            "#43a047", "#7cb342", "#c0ca33", 
-            "#fdd835", "#ffb300", "#fb8c00", 
-            "#f4511e", "#6d4c41"]);
+    .range(materialColors);
 
 var simulation = d3.forceSimulation()
     .force("link", d3.forceLink().id(function(d) { return d.id; }))
-    .force("gravity", d3.forceManyBody().strength(function(_d) {
-      return 10;
-    }))
+    .force("gravity", d3.forceManyBody().strength(10))
     .force("charge", d3.forceManyBody().strength(function(_d) {
       return -_d.index - 5;
     }))
     .force("center", d3.forceCenter(width / 2, height / 2));
 
 
-  generateData(data, xScale, yScale, xScaleFn, yScaleFn, ticks, options)
+  generateData(data, options)
     .then(_data => {
       var link = svg.append("g")
         .attr("class", "links")
         .selectAll("line")
         .data(_data.links)
         .enter().append("line")
-        .attr("stroke-width", (_d) => {
-          return _d.index;
-        })
+        .attr("stroke-width", _d => _d.index);
       
       var node = svg.append("g")
         .attr("class", "nodes")
@@ -170,21 +161,16 @@ var simulation = d3.forceSimulation()
         .data(_data.nodes)
         .enter().append("circle")
         .attr("r", (_d) => {
-          return _d.id / 20000;
+          return _d.id / 30000;
         })
-        .attr("fill", (_d) => {
-          return color(_d.id);
-        })
+        .attr("fill", _d => color(_d.id))
         .call(d3.drag()
           .on("start", dragstarted)
           .on("drag", dragged)
           .on("end", dragended));
       
       node.append("title")
-        .text(_d => {
-          return _d.id
-        });
-      
+        .text(_d => _d.id);
       
       simulation
         .nodes(_data.nodes)
@@ -207,7 +193,7 @@ var simulation = d3.forceSimulation()
       }
     })
     .catch(_e => {
-      console.log("Error happened in promise chain, ", _e)
+      throw _e;
     })
   
 
