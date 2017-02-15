@@ -89,7 +89,9 @@ function getData(source, bins, _attribute, nodes, edges, options) {
         addEdge(_mean, _.get(_element, selectedAttribute))
       });
 
-      if(counter < binDepth) {
+      let depth = options.depth || binDepth
+
+      if(counter < depth) {
         options.counter = counter + 1;
         let _gBin = generateBins(_bin, options);
         getData(_mean, _gBin, _attribute, nodes, edges, options); 
@@ -141,7 +143,7 @@ var simulation = d3.forceSimulation()
     .force("link", d3.forceLink().id(function(d) { return d.id; }))
     .force("gravity", d3.forceManyBody().strength(10))
     .force("charge", d3.forceManyBody().strength(function(_d) {
-      return -_d.index - 5;
+      return (options.gravity || -_d.index - 15);
     }))
     .force("center", d3.forceCenter(width / 2, height / 2));
 
@@ -161,7 +163,7 @@ var simulation = d3.forceSimulation()
         .data(_data.nodes)
         .enter().append("circle")
         .attr("r", (_d) => {
-          return _d.id / 30000;
+          return (options.radius || _d.id / 19000);
         })
         .attr("fill", _d => color(_d.id))
         .call(d3.drag()

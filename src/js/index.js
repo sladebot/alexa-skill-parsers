@@ -344,7 +344,30 @@ function handleAttributeClick(_attribute, _data) {
     let binData = fitDomains(_data, _d => { return parseInt(_.get(_d, _attribute))}, _d => {return _d.length}, 10)
     renderPie(binData);
     setAttributeSelectionState(_attribute);
-  } else {
+  } else if(_chartType == "fdg") {
+    setAttributeSelectionState(_attribute);
+    let _fdgTicks = 55;
+    chartContainer.data('chart-type', 'fdg');
+    let data = chartContainer.data('data');
+    let _selectedAttribute = $("#attributes").find("a.disabled").text();
+    let options = {
+      selectedAttribute: _selectedAttribute,
+      height: height,
+      width: width,
+      cacheContainer: chartContainer,
+      xScale: x,
+      yScale: y,
+      depth: 50,
+      radius: 20,
+      gravity: -20.5,
+      xDomainFn: _d => {return parseInt(_.get(_d, _selectedAttribute))},
+      yDomainFn: _d => {return _d.length},
+      ticks: _fdgTicks
+    }
+    FDG.draw(data, options)
+    
+  } 
+  else {
     console.log("Unrecognized chart")
   }
 }
