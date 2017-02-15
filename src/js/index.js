@@ -9,17 +9,20 @@ var FDG = require("./charts/fdg");
 var margin = {top: 20, right: 20, bottom: 30, left: 40},
     chartContainerWidth = d3.select(".chart").style("width") || 1040,
     width =  parseInt(chartContainerWidth) - margin.left - margin.right,
-    height = 500 - margin.top - margin.bottom,
+    height = 600 - margin.top - margin.bottom,
     barSpacing = 10,
     startX = 0;
 
-const color = d3.scaleOrdinal(d3.schemeCategory20)
-    .range(["#d32f2f", "#c2185b", "#7b1fa2", 
-            "#5e35b1", "#3949ab", "#1e88e5", 
-            "#039be5", "#00acc1", "#00897b", 
-            "#43a047", "#7cb342", "#c0ca33", 
-            "#fdd835", "#ffb300", "#fb8c00", 
-            "#f4511e", "#6d4c41"]);
+var legendRectSize = 18;
+var legendSpacing = 4;
+
+// const color = d3.scaleOrdinal(d3.schemeCategory20)
+    // .range(["#d32f2f", "#c2185b", "#7b1fa2", 
+    //         "#5e35b1", "#3949ab", "#1e88e5", 
+    //         "#039be5", "#00acc1", "#00897b", 
+    //         "#43a047", "#7cb342", "#c0ca33", 
+    //         "#fdd835", "#ffb300", "#fb8c00", 
+    //         "#f4511e", "#6d4c41"]);
 
 const chartContainer = $('#chart-container');
 
@@ -91,8 +94,6 @@ function fitDomains(data, xDomainFn, yDomainFn, tickCount) {
  * 
  */
 function renderPie(binData) {
-  var legendRectSize = 18;
-  var legendSpacing = 1;
   let selectedAttribute = $("#attributes").find("a.disabled").text()
   /**
    * Filtering Data
@@ -118,10 +119,17 @@ function renderPie(binData) {
   // 3. Taking first 10 elements
   // formattedPieData = _.take(formattedPieData, 7);
 
-  let radius = Math.min(width, height) / 2;
+  let radius = Math.min(width, height) / 2 - 40;
   
   // Removing existing SVG
   d3.select("svg").remove().exit();
+  let color = d3.scaleOrdinal(d3.schemeCategory10)
+    .range(["#d32f2f", "#c2185b", "#7b1fa2", 
+            "#5e35b1", "#3949ab", "#1e88e5", 
+            "#039be5", "#00acc1", "#00897b", 
+            "#43a047", "#7cb342", "#c0ca33", 
+            "#fdd835", "#ffb300", "#fb8c00", 
+            "#f4511e", "#6d4c41"]);;
   
   // Building Pie Chart
   let arc = d3.arc()
@@ -154,45 +162,22 @@ function renderPie(binData) {
       selectSelectors(e);
       updateHistogram(selectedAttribute, chartContainer.data("data"))
     })
-    .style("fill", _d => color(_d.data.value));
-
-  var legend = d3.select(".chart").select("svg")
-    .selectAll(".legend")
-    .data(color.domain())
-    .enter()
-    .append("g")
-    .attr("class", "legend")
-    .attr("transform", function(d, i) {
-      let height = legendRectSize + legendSpacing  + 20;
-      let offset = height * color.domain().length / 2;
-      let horz = ( -2 * legendRectSize + 50);
-      let vert = i * height;
-      return `translate(${horz}, ${vert})`
-    })
-  
-  legend.append("rect")
-    .attr("width", legendRectSize + 10)
-    .attr("height", legendRectSize)
-    .style("fill", color)
-    .style("stroke", color)
-
-  g.append('text')
-    .attr("transform", (d, i) => {
-      let height = legendRectSize + legendSpacing + 20;
-      let offset = height * color.domain().length / 2;
-      let horz = ( -2 * legendRectSize - offset - 30);
-      let vert = i * height - offset - 130;
-      return `translate(${horz}, ${vert})`
-    })
-    .attr('x', legendRectSize + legendSpacing)
-    .attr('y', legendRectSize - legendSpacing)
-    .style("fill", "white")
-    .text(_d => {
-      return `${_d.data.x0} - ${_d.data.x1}`
+    .style("fill", _d => color(_d.data.value))
+    .transition()
+    .duration(1000)
+    .attrTween("d", function(d) {
+        this._current = this._current || d;
+        var interpolate = d3.interpolate(this._current, d);
+        this._current = interpolate(0);
+        return function(t) {
+            return arc(interpolate(t));
+        };
     });
 
-
-
+    g.append("title")
+      .text(_d => {
+        return `${_d.data.min} - ${_d.data.max}`
+      });
 }
 
 function dragStart(_e) {
@@ -357,8 +342,8 @@ function handleAttributeClick(_attribute, _data) {
       cacheContainer: chartContainer,
       xScale: x,
       yScale: y,
-      depth: 50,
-      radius: 20,
+      depth: 10,
+      radius: 10,
       gravity: -20.5,
       xDomainFn: _d => {return parseInt(_.get(_d, _selectedAttribute))},
       yDomainFn: _d => {return _d.length},
