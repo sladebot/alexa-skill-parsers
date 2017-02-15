@@ -58,26 +58,33 @@ function getData(source, bins, _attribute, nodes, edges, xScale, yScale, xScaleF
   console.log("Recursive counter - ", counter)
   let selectedAttribute = options.selectedAttribute;
 
+  function addNode(value, counter) {
+    nodes.push({
+      id: `${value}`,
+      value: `${value}`
+    });
+  }
+
+  function addEdge(source, target) {
+    edges.push({
+      source: `${source}`,
+      target: `${target}`
+    })
+  }
+
   _.each(bins, _bin => {
-    console.log("BIN ITERATION COUNTER = ", counter)
     if(_bin.length > 0) {
       let _mean = getMean(_bin, selectedAttribute)
       if(_.indexOf(nodes, _mean) == -1 & (source != _mean)) {
-        nodes.push({id: `${_mean}`})
+        addNode(_mean)
       }
-      edges.push({
-        source: `${source}`,
-        target: `${_mean}`
-      });
+      addEdge(source, _mean);
 
       _.each(_bin, _element => {
         if(_.indexOf(nodes, _mean) == -1) {
-          nodes.push({id: `${_.get(_element, selectedAttribute)}`});
+          addNode(_.get(_element, selectedAttribute))
         }
-        edges.push({
-          source: `${_mean}`,
-          target: `${_.get(_element, selectedAttribute)}`
-        });
+        addEdge(_mean, _.get(_element, selectedAttribute))
       });
 
       if(counter < 40) {
@@ -87,11 +94,6 @@ function getData(source, bins, _attribute, nodes, edges, xScale, yScale, xScaleF
         getData(_mean, _gBin, _attribute, nodes, edges, xScale, yScale, xScaleFn, yScaleFn, ticks, options); 
       }
       
-
-      // if(_bin < 5000) {
-      //   let _gBin = generateBins(_bin, xScale, yScale, xScaleFn, yScaleFn, ticks, options);
-      //   getData(_mean, _gBin, _attribute, nodes, edges, xScale, yScale, xScaleFn, yScaleFn, ticks, options); 
-      // }
     }
   });
   return {
