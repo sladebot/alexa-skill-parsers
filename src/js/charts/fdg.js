@@ -47,7 +47,6 @@ function findIndex(nodes, node) {
   })
 
   if(index == -1) {
-    debugger;
   }
   return index
 }
@@ -55,11 +54,12 @@ function findIndex(nodes, node) {
 function getData(source, bins, _attribute, nodes, edges, xScale, yScale, xScaleFn, yScaleFn, ticks, options) {
   nodes = nodes || []
   edges = edges || []
-  counter = 0;
+  counter = options.counter || 0;
+  console.log("Recursive counter - ", counter)
   let selectedAttribute = options.selectedAttribute;
 
   _.each(bins, _bin => {
-    counter += 1
+    console.log("BIN ITERATION COUNTER = ", counter)
     if(_bin.length > 0) {
       let _mean = getMean(_bin, selectedAttribute)
       if(_.indexOf(nodes, _mean) == -1) {
@@ -69,21 +69,29 @@ function getData(source, bins, _attribute, nodes, edges, xScale, yScale, xScaleF
         source: `${source}`,
         target: `${_mean}`
       });
-      
-      // _.each(_bin, _element => {
-      //   if(_.indexOf(nodes, _mean) == -1) {
-      //     nodes.push({id: `${_.get(_element, selectedAttribute)}`});
-      //   }
-      //   edges.push({
-      //     source: `${_mean}`,
-      //     target: `${_.get(_element, selectedAttribute)}`
-      //   });
-      // });
 
-      if(_bin < 5000) {
+      _.each(_bin, _element => {
+        if(_.indexOf(nodes, _mean) == -1) {
+          nodes.push({id: `${_.get(_element, selectedAttribute)}`});
+        }
+        edges.push({
+          source: `${_mean}`,
+          target: `${_.get(_element, selectedAttribute)}`
+        });
+      });
+
+      if(counter < 20) {
+        console.log("Calling with counter - ", counter)
+        options.counter = counter + 1;
         let _gBin = generateBins(_bin, xScale, yScale, xScaleFn, yScaleFn, ticks, options);
         getData(_mean, _gBin, _attribute, nodes, edges, xScale, yScale, xScaleFn, yScaleFn, ticks, options); 
       }
+      
+
+      // if(_bin < 5000) {
+      //   let _gBin = generateBins(_bin, xScale, yScale, xScaleFn, yScaleFn, ticks, options);
+      //   getData(_mean, _gBin, _attribute, nodes, edges, xScale, yScale, xScaleFn, yScaleFn, ticks, options); 
+      // }
     }
   });
   return {
@@ -106,9 +114,7 @@ function generateData(data, xScale, yScale, xScaleFn, yScaleFn, ticks, options) 
       let sourceMean = getMean(data, _attribute)
       nodes.push({id: `${sourceMean}`})
       return resolve(getData(sourceMean, binData, _attribute, nodes, edges, xScale, yScale, xScaleFn, yScaleFn, ticks, options))
-      debugger;
     } catch(e) {
-      debugger;
       return reject(e);
     }
   })  
@@ -140,12 +146,14 @@ exports.draw = function(data, xScale, yScale, xScaleFn, yScaleFn, ticks, options
             "#f4511e", "#6d4c41"]);
 
   
-// var color = d3.scaleOrdinal(d3.schemeCategory20);
 
 var simulation = d3.forceSimulation()
     .force("link", d3.forceLink().id(function(d) { return d.id; }))
     .force("charge", d3.forceManyBody())
-    .force("center", d3.forceCenter(width / 2, height / 2));
+    .force("center", d3.forceCenter(width / 2, height / 2))
+    .force("charge", d3.forceManyBody().strength(function() {
+      return -0.5;
+    }));
 
 
   generateData(data, xScale, yScale, xScaleFn, yScaleFn, ticks, options)
@@ -164,9 +172,11 @@ var simulation = d3.forceSimulation()
         .selectAll("circle")
         .data(_data.nodes)
         .enter().append("circle")
-        .attr("r", 5)
+        .attr("r", (_d) => {
+          return _d.id / 20000;
+        })
         .attr("fill", (_d) => {
-          return "red";
+          return color(_d.id);
         })
         .call(d3.drag()
           .on("start", dragstarted)
@@ -187,7 +197,6 @@ var simulation = d3.forceSimulation()
         .links(_data.links);
 
       function ticked() {
-        debugger;
         link
           .attr("x1", _d => _d.source.x)
           .attr("y1", _d => _d.source.y)
@@ -200,7 +209,6 @@ var simulation = d3.forceSimulation()
       }
     })
     .catch(_e => {
-      debugger;
       console.log("Error happened in promise chain, ", _e)
     })
   
