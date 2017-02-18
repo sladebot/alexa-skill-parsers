@@ -49,9 +49,13 @@ const handlers = {
         let workout = _.find(workoutList, _o => {
             return  _o.toLowerCase() == selection.toLowerCase();
         });
-        console.log(`${workout}`)
-        const speechOutput = constants.START_WORKOUT_MESSAGE + workout;
-        this.emit(':tell', speechOutput);
+
+        if(workout) {
+            const speechOutput = constants.START_WORKOUT_MESSAGE + workout;
+            this.emit(':tell', speechOutput);
+        } else {
+            this.emit("HelpIntent");
+        }
     },
     'AMAZON.HelpIntent': function () {
         const speechOutput = constants.HELP_MESSAGE
