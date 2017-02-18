@@ -25,13 +25,17 @@ const constants = {
 const handlers = {
     'LaunchRequest': function () {
         let welcomeSpeech = "Hello ! Do you want to get today's workouts ? Say Alexa ! get workouts !"
-        this.emit(":tell", welcomeSpeech)
+        // this.emit(":tell", welcomeSpeech)
+        this.emit('GetWorkouts');
     },
     'GetNewWorkoutIntent': function () {
         this.emit('GetWorkout');
     },
     'IntentRequest': function() {
         this.emit(":tell", "What can I help you with ?")
+    },
+    'Unhandled': function() {
+
     },
     'GetWorkouts': function () {
         const workoutList = constants.WORKOUTS;
