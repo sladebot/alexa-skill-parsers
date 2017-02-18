@@ -26,11 +26,11 @@ app.post('/api/alexa', (req, res) => {
   const context = {
     fail: () => {
       console.log("FAILED");
-      // res.sendStatus(500);
+      res.sendStatus(500);
     },
     succeed: data => {
       console.log("SUCCEED");
-      // res.send(data);
+      res.status(200).status(data);
     }
   };
   req.body.request.locale = "en-GB";
