@@ -29,6 +29,7 @@
     "method-override": "^2.3.7",
     "morgan": "^1.8.0",
     "pg": "^6.1.2",
+    "pg-promise": "^5.5.7",
     "serve-favicon": "^2.3.2",
     "similarity": "^1.1.0"
   },
