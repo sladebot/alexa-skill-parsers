@@ -54,7 +54,7 @@ const handlers = {
             const speechOutput = constants.START_WORKOUT_MESSAGE + workout;
             this.emit(':tell', speechOutput);
         } else {
-            this.emit("HelpIntent");
+            this.emit("AMAZON.HelpIntent");
         }
     },
     'AMAZON.HelpIntent': function () {
