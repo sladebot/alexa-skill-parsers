@@ -50,7 +50,10 @@ const handlers = {
 
         workoutList.forEach(function(_workout) {
             if(_workout == selection) {
-                workout = selection
+                console.log("Got selected workout - ", _workout);
+                workout = _workout
+            } else {
+                console.log("Dint find workout !");
             }
         });
 
@@ -58,18 +61,18 @@ const handlers = {
         this.emit(':tell', speechOutput);
     },
     'AMAZON.HelpIntent': function () {
-        const speechOutput = this.t('HELP_MESSAGE');
-        const reprompt = this.t('HELP_MESSAGE');
+        const speechOutput = constants.HELP_MESSAGE
+        const reprompt = constants.HELP_MESSAGE
         this.emit(':ask', speechOutput, reprompt);
     },
     'AMAZON.CancelIntent': function () {
-        this.emit(':tell', this.t('STOP_MESSAGE'));
+        this.emit(':tell', constants.STOP_MESSAGE);
     },
     'AMAZON.StopIntent': function () {
-        this.emit(':tell', this.t('STOP_MESSAGE'));
+        this.emit(':tell', constants.STOP_MESSAGE);
     },
     'SessionEndedRequest': function () {
-        this.emit(':tell', this.t('STOP_MESSAGE'));
+        this.emit(':tell', constants.STOP_MESSAGE);
     },
 };
 
