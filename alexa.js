@@ -3,8 +3,28 @@
 var Alexa = require("alexa-sdk");
 const APP_ID = "amzn1.ask.skill.8985b048-54ab-452c-bee1-b9a0bd93603d";
 
-var handlers = {
-  'LaunchRequest': function () {
+const languageStrings = {
+    'en-GB': {
+        translation: {
+            WORKOUTS: [
+                'Push Ups',
+                'Sit Ups',
+                'Squats',
+                'Power Jump',
+                'Crunches',
+                'Burpees'
+            ],
+            SKILL_NAME: 'Workouts',
+            GET_WORKOUT_MESSAGE: "Here are your workouts options: ",
+            HELP_MESSAGE: 'You can say tell me workouts, or, you can say exit... What can I help you with?',
+            HELP_REPROMPT: 'What can I help you with?',
+            STOP_MESSAGE: 'Goodbye!',
+        },
+    }
+};
+
+const handlers = {
+    'LaunchRequest': function () {
         this.emit('GetWorkout');
     },
     'GetNewWorkoutIntent': function () {
@@ -47,14 +67,14 @@ var handlers = {
     },
     'SessionEndedRequest': function () {
         this.emit(':tell', this.t('STOP_MESSAGE'));
-    }
-}
+    },
+};
 
-
-
-exports.handler = function(event, context, callback) {
-  const alexa = Alexa.handler(event, context);
-  alexa.APP_ID = APP_ID;
-  alexa.registerHandlers(handlers);
-  alexa.execute();
-}
+exports.handler = (event, context) => {
+    const alexa = Alexa.handler(event, context);
+    alexa.APP_ID = APP_ID;
+    // To enable string internationalization (i18n) features, set a resources object.
+    alexa.resources = languageStrings;
+    alexa.registerHandlers(handlers);
+    alexa.execute();
+};
