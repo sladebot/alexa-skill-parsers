@@ -37,7 +37,7 @@ const handlers = {
         })
         console.log("message - ", workoutListMessage)
 
-        const speechOutput = this.t('GET_WORKOUT_MESSAGE') + workoutListMessage.join(' ');
+        const speechOutput = constants.GET_WORKOUT_MESSAGE + workoutListMessage.join(' ');
         console.log('Speech Output - ', speechOutput)
         this.emit(':tellWithCard', speechOutput);
     },
