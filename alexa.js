@@ -46,7 +46,7 @@ const handlers = {
         let selection = this.event.request.intent.slots.workout.value;
         const workoutList = constants.WORKOUTS;
         console.log(`Searching ${workoutList} for ${selection}`)
-        let workout = _.find(workoutList, selection)
+        let workout = _.find(workoutList, _o => _o == selection);
         const speechOutput = constants.START_WORKOUT_MESSAGE + workout;
         console.log(`${workout} ----------- ${speechOutput}`)
         this.emit(':tell', speechOutput);
