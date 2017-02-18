@@ -27,6 +27,9 @@ const handlers = {
     'GetNewWorkoutIntent': function () {
         this.emit('GetWorkout');
     },
+    'IntentRequest': function() {
+        this.emit(":tell", "What can I help you with ?")
+    },
     'GetWorkouts': function () {
         const workoutList = constants.WORKOUTS;
         let workoutListMessage = []
@@ -73,6 +76,6 @@ exports.handler = (event, context) => {
     alexa.APP_ID = APP_ID;
     // To enable string internationalization (i18n) features, set a resources object.
     // alexa.resources = languageStrings;
-    alexa.registerHandlers(handlers);
+    alexa.registerHa    ndlers(handlers);
     alexa.execute();
 };
