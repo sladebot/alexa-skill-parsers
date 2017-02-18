@@ -25,9 +25,11 @@ app.post('/api/alexa', (req, res) => {
   console.log("Echo request");
   const context = {
     fail: () => {
+      console.log("FAILED");
       res.sendStatus(500);
     },
     succeed: data => {
+      console.log("SUCCEED");
       res.send(data);
     }
   };
