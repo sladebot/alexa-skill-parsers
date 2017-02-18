@@ -32,13 +32,13 @@ const handlers = {
     },
     'GetWorkouts': function () {
         const workoutList = constants.WORKOUTS;
-        let workoutListMessage = []
-        workoutList.forEach((_workout, index) => {
-            console.log(`Workout - ${_workout}, Index - ${index}`)
-            workoutListMessage.push(`${_workout}`);
+        let workoutListMessage = workoutList.map((_workout, index) => {
+            workoutListMessage.push(`${index + 1}. ${_workout}`);
         })
+        console.log("message - ", workoutListMessage)
 
         const speechOutput = this.t('GET_WORKOUT_MESSAGE') + workoutListMessage.join(' ');
+        console.log('Speech Output - ', speechOutput)
         this.emit(':tellWithCard', speechOutput);
     },
     'GetWorkout': function(intent) {
