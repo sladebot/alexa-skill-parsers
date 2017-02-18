@@ -44,7 +44,6 @@ const handlers = {
     },
     'SelectWorkout': function(intent) {
         console.log("Selection - ", this.event.request.intent.slots.workout.value);
-        console.log("Intent - ", this.intent);
         let selection = this.event.request.intent.slots.workout.value;
         const workoutList = constants.WORKOUTS;
         
