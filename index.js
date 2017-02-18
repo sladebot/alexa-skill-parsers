@@ -27,7 +27,7 @@ app.post('/api/alexa', (req, res) => {
     fail: () => {
       res.sendStatus(500);
     },
-    suceed: data => {
+    succeed: data => {
       res.send(data);
     }
   };
