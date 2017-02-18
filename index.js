@@ -20,11 +20,11 @@ var client = new pg.Client(pgConnectionString);
 
 client.connect();
 
-app.use(bodyParser.json({
-  verify: function getRawBody(req, res, buf) {
-    req.rawBody = buf.toString()
-  }
-}));
+app.use(bodyParser.urlencoded({     // to support URL-encoded bodies
+  extended: true
+})); 
+app.use(bodyParser.json());
+
 
 app.get("/api/iot/devices", (req, res) => {
   let query = client.query("SELECT * from iot_devices LIMIT 10;");
@@ -54,7 +54,6 @@ app.post('/api/alexa', (req, res) => {
 
 app.post("/api/iot/device", (req, res) => {
   console.log("GOT IOT DATA", req.query);
-  console.log(req)
   var data = req.body;
   // Store data to Postgres
   var deviceData = {
@@ -75,7 +74,6 @@ app.post("/api/iot/device", (req, res) => {
 
 app.post("/api/iot/user", (req, res) => {
   console.log("GOT IOT DATA", req.query);
-  console.log(req);
   var data = req.body;
   var userData = {
     exercise: data.exercise,
