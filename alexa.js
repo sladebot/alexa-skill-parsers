@@ -46,18 +46,11 @@ const handlers = {
         console.log("Selection - ", this.event.request.intent.slots.workout.value);
         let selection = this.event.request.intent.slots.workout.value;
         const workoutList = constants.WORKOUTS;
-        let workout = null;
 
-        workoutList.forEach(function(_workout) {
-            if(_workout == selection) {
-                console.log("Got selected workout - ", _workout);
-                workout = _workout
-                const speechOutput = constants.START_WORKOUT_MESSAGE + workout;
-                this.emit(':tell', speechOutput);
-            } else {
-                console.log("Dint find workout !");
-            }
-        });
+        let workout = _.find(workoutList, selection)
+        const speechOutput = constants.START_WORKOUT_MESSAGE + workout;
+        console.log(`${workout} ----------- ${speechOutput}`)
+        this.emit(':tell', speechOutput);
     },
     'AMAZON.HelpIntent': function () {
         const speechOutput = constants.HELP_MESSAGE
