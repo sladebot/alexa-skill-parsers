@@ -17,7 +17,7 @@ router.get('/', function(req, res) {
 });
 
 router.get('/getWorkouts', function(req, res) {
-  res.status(200).json({"status": "OK"});
+  res.status(200).json({"status": workouts});
 });
 
 
