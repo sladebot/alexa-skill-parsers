@@ -21,7 +21,7 @@ app.use(bodyParser.json({
 
 
 
-app.post('/api/echo', (req, res) => {
+app.post('/api/alexa', (req, res) => {
   console.log("Echo request");
   alexa(request)
 
