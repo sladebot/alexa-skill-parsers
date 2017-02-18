@@ -46,9 +46,11 @@ const handlers = {
         let selection = this.event.request.intent.slots.workout.value;
         const workoutList = constants.WORKOUTS;
         console.log(`Searching ${workoutList} for ${selection}`)
-        let workout = _.find(workoutList, _o => _o == selection);
+        let workout = _.find(workoutList, _o => {
+            return  _o == selection;
+        });
+        console.log(`${workout}`)
         const speechOutput = constants.START_WORKOUT_MESSAGE + workout;
-        console.log(`${workout} ----------- ${speechOutput}`)
         this.emit(':tell', speechOutput);
     },
     'AMAZON.HelpIntent': function () {
