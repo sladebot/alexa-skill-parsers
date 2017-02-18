@@ -34,6 +34,7 @@ const handlers = {
         const workoutList = constants.WORKOUTS;
         let workoutListMessage = []
         workoutList.forEach((_workout, index) => {
+            console.log(`Workout - ${_workout}, Index - ${index}`)
             workoutListMessage.push(`${index + 1}. ${_workout}`);
         })
 
