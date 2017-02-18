@@ -30,10 +30,9 @@ app.post('/api/alexa', (req, res) => {
     suceed: data => {
       res.send(data);
     }
-  }
-  alexa.handler(req.body.request, req.body.session, (data) => {
-    res.send(data);
-  });
+  };
+  req.body.request.locale = "en-GB";
+  alexa.handler(req.body, context);
   res.status(200).json({"status": 200});
 })
 
