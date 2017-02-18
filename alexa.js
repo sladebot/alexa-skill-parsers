@@ -33,7 +33,7 @@ const handlers = {
     'GetWorkouts': function () {
         const workoutList = this.t('WORKOUTS');
         let workoutListMessage = []
-        
+        console.log(workoutList);
         workoutList.forEach((_workout, index) => {
             workoutListMessage.push(`${index}. ${_workout}`);
         })
