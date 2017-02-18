@@ -42,7 +42,7 @@ const handlers = {
         this.emit(':tellWithCard', speechOutput);
     },
     'SelectWorkout': function(intent) {
-        console.log("Selection - ", intent);
+        console.log("Selection - ", this.event.request);
         
         
         const workoutList = constants.WORKOUTS;
