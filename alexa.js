@@ -1,5 +1,5 @@
 'use strict';
-
+var _ = require("lodash");
 var Alexa = require("alexa-sdk");
 const APP_ID = "amzn1.ask.skill.8985b048-54ab-452c-bee1-b9a0bd93603d";
 
