@@ -23,6 +23,14 @@ app.use(bodyParser.json({
 
 app.post('/api/alexa', (req, res) => {
   console.log("Echo request");
+  const context = {
+    fail: () => {
+      res.sendStatus(500);
+    },
+    suceed: data => {
+      res.send(data);
+    }
+  }
   alexa.handler(req.body);
   res.status(200).json({"status": 200});
 })
