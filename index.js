@@ -29,7 +29,7 @@ app.post('/api/alexa', (req, res) => {
       res.sendStatus(500);
     },
     succeed: data => {
-      console.log("SUCCEED");
+      console.log("SUCCEED RESPONSE - ", data);
       res.send(data);
     }
   };
