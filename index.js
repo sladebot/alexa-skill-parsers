@@ -1,3 +1,4 @@
+
 let express = require("express"),
   bodyParser = require("body-parser"),
   alexa = require("./alexa"),
@@ -18,6 +19,10 @@ app.use(bodyParser.json({
   }
 }))
 
+app.post('/api/echo', (req, res) => {
+  console.log("Echo request")
+  res.status(200).json({"status": 200});
+})
 
 
 app.get("/", (req, res) => {
