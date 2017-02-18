@@ -30,7 +30,7 @@ app.post('/api/alexa', (req, res) => {
     },
     succeed: data => {
       console.log("SUCCEED");
-      res.status(200).status(data);
+      res.send(data);
     }
   };
   req.body.request.locale = "en-GB";
