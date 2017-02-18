@@ -41,7 +41,7 @@ app.post('/api/alexa', (req, res) => {
 });
 
 app.post("/api/iot/device", (req, res) => {
-  console.log("GOT IOT DATA", req.body);
+  console.log("GOT IOT DATA", req.query);
   console.log(req)
   var data = req.body;
   // Store data to Postgres
@@ -54,7 +54,7 @@ app.post("/api/iot/device", (req, res) => {
 });
 
 app.post("/api/iot/user", (req, res) => {
-  console.log("GOT IOT DATA", req.body);
+  console.log("GOT IOT DATA", req.query);
   console.log(req);
   var data = req.body;
   var userData = {
