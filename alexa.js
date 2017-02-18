@@ -33,7 +33,7 @@ const handlers = {
     'GetWorkouts': function () {
         const workoutList = constants.WORKOUTS;
         let workoutListMessage = workoutList.map((_workout, index) => {
-            workoutListMessage.push(`${index + 1}. ${_workout}`);
+            return `${index + 1}. ${_workout}`
         })
         console.log("message - ", workoutListMessage)
 
