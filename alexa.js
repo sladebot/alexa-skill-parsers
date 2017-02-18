@@ -47,7 +47,7 @@ const handlers = {
         const workoutList = constants.WORKOUTS;
         console.log(`Searching ${workoutList} for ${selection}`)
         let workout = _.find(workoutList, _o => {
-            return  _o == selection;
+            return  _o.toLowerCase() == selection.toLowerCase();
         });
         console.log(`${workout}`)
         const speechOutput = constants.START_WORKOUT_MESSAGE + workout;
