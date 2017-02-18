@@ -52,13 +52,12 @@ const handlers = {
             if(_workout == selection) {
                 console.log("Got selected workout - ", _workout);
                 workout = _workout
+                const speechOutput = constants.START_WORKOUT_MESSAGE + workout;
+                this.emit(':tell', speechOutput);
             } else {
                 console.log("Dint find workout !");
             }
         });
-
-        const speechOutput = constants.START_WORKOUT_MESSAGE + workout;
-        this.emit(':tell', speechOutput);
     },
     'AMAZON.HelpIntent': function () {
         const speechOutput = constants.HELP_MESSAGE
