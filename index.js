@@ -23,7 +23,7 @@ app.use(bodyParser.json({
 
 app.post('/api/alexa', (req, res) => {
   console.log("Echo request");
-  alexa(req)
+  alexa.handler(req)
 
   res.status(200).json({"status": 200});
 })
