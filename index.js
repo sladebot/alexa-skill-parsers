@@ -17,26 +17,15 @@ app.use(bodyParser.json({
   verify: function getRawBody(req, res, buf) {
     req.rawBody = buf.toString()
   }
-}))
+}));
+
+
 
 app.post('/api/echo', (req, res) => {
-  console.log("Echo request")
+  console.log("Echo request");
+  alexa(request)
+
   res.status(200).json({"status": 200});
-})
-
-
-app.get("/", (req, res) => {
-  res.status(200).json({"status": 200})
-})
-
-app.get('/getWorkouts', (req, res) => {
-  console.log("Got request");
-  res.status(200).json({"status": 200})
-})
-
-app.post('/getWorkouts', (req, res) => {
-  console.log("Got post request");
-  res.status(200).json({"status": 200})
 })
 
 // app.post("/getWorkouts", requestVerifier, (req, res) => {
