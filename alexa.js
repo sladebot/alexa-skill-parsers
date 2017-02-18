@@ -71,6 +71,7 @@ const handlers = {
 };
 
 exports.handler = (event, context) => {
+    console.log("Event, ", event);
     console.log("Context, ", context);
     const alexa = Alexa.handler(event, context);
     alexa.APP_ID = APP_ID;
