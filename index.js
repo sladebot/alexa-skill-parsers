@@ -18,6 +18,10 @@ app.use(bodyParser.json({
   }
 }))
 
+app.get("/", (req, res) => {
+  res.status(200).json({"status": 200})
+})
+
 app.post("/getWorkouts", requestVerifier, (req, res) => {
   console.log(req);
   if (req.body.request.type === 'LaunchRequest') {
