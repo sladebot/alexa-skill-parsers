@@ -35,7 +35,7 @@ const handlers = {
         let workoutListMessage = []
         workoutList.forEach((_workout, index) => {
             console.log(`Workout - ${_workout}, Index - ${index}`)
-            workoutListMessage.push(`${index + 1}. ${_workout}`);
+            workoutListMessage.push(`${_workout}`);
         })
 
         const speechOutput = this.t('GET_WORKOUT_MESSAGE') + workoutListMessage.join(' ');
