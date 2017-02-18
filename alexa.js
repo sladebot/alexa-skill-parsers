@@ -46,7 +46,7 @@ const handlers = {
 
         const speechOutput = constants.GET_WORKOUT_MESSAGE + workoutListMessage.join(' ');
         console.log('Speech Output - ', speechOutput)
-        this.emit(':tellWithCard', speechOutput);
+        this.emit(':askWithCard', speechOutput);
     },
     'SelectWorkout': function(intent) {
         let selection = this.event.request.intent.slots.workout.value;
