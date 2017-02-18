@@ -16,7 +16,8 @@ const constants = {
     GET_WORKOUT_MESSAGE: "Here are your workouts options: ",
     HELP_MESSAGE: 'You can say tell me workouts, or, you can say exit... What can I help you with?',
     HELP_REPROMPT: 'What can I help you with?',
-    STOP_MESSAGE: 'Goodbye!'
+    STOP_MESSAGE: 'Goodbye!',
+    START_WORKOUT_MESSAGE: 'Lets start with: '
 }
 
 const handlers = {
@@ -44,18 +45,16 @@ const handlers = {
     'SelectWorkout': function(intent) {
         console.log("Selection - ", this.event.request.intent.slots.workout.value);
         console.log("Intent - ", this.intent);
-        
-        
+        let selection = this.event.request.intent.slots.workout.value;
         const workoutList = constants.WORKOUTS;
-        let workout = null;
         
-        workoutList.forEach((_workout, _index) => {
-            if(workout == intent.slots.workout,value) {
-                workout = e;
+        let workout = workoutList.map((_workout) => {
+            if(_workout == selection) {
+                return _workout;
             }
         });
-        const speechOutput = workout;
-        this.emit(':tell', "O")
+        const speechOutput = constants.START_WORKOUT_MESSAGE + workout;
+        this.emit(':tell', speechOutput);
     },
     'AMAZON.HelpIntent': function () {
         const speechOutput = this.t('HELP_MESSAGE');
