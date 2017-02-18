@@ -21,7 +21,8 @@ const constants = {
 
 const handlers = {
     'LaunchRequest': function () {
-        this.emit('GetWorkouts');
+        let welcomeSpeech = "Hello ! Do you want to get today's workouts ? Say Alexa ! get workouts !"
+        this.emit(":tell", welcomeSpeech)
     },
     'GetNewWorkoutIntent': function () {
         this.emit('GetWorkout');
@@ -40,7 +41,6 @@ const handlers = {
     },
     'GetWorkout': function(intent) {
         const workoutList = constants.WORKOUTS;
-        console.log(workoutList)
         let workout = null;
         
         workoutList.forEach((_workout, _index) => {
