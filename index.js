@@ -31,7 +31,9 @@ app.post('/api/alexa', (req, res) => {
       res.send(data);
     }
   }
-  alexa.handler(req.body, context);
+  alexa.handler(req.body, (data) => {
+    res.send(data);
+  });
   res.status(200).json({"status": 200});
 })
 
