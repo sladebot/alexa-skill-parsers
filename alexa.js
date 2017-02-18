@@ -49,7 +49,6 @@ const handlers = {
         const workoutList = constants.WORKOUTS;
         console.log(`Searching ${workoutList} for ${selection}`)
         let workout = _.find(workoutList, _o => {
-            // return  _o.toLowerCase() == selection.toLowerCase();
             return similarity(_o, selection) > 0.5;
         });
 
