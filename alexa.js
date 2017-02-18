@@ -25,10 +25,10 @@ const languageStrings = {
 
 const handlers = {
     'LaunchRequest': function () {
-        this.emit('GetWorkout');
+        this.emit('GetWorkouts');
     },
     'GetNewWorkoutIntent': function () {
-        this.emit('GetWorkout');
+        this.emit('GetWorkouts');
     },
     'GetWorkouts': function () {
         const workoutList = this.t('WORKOUTS');
