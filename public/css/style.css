@@ -1,0 +1,112 @@
+@import url(../components/materialize/dist/css/materialize.min.css);
+@import url("https://fonts.googleapis.com/css?family=Roboto");
+@import url("https://fonts.googleapis.com/icon?family=Material+Icons");
+body {
+  font: 14px "Roboto";
+  background: #222222; }
+
+nav {
+  margin-bottom: 20px; }
+  nav .brand-logo img {
+    margin: 12px 20px;
+    padding: 5px;
+    height: 40px;
+    width: 50px; }
+
+a {
+  color: #00B7FF; }
+
+.axis--x path, .axis--y path {
+  stroke: white; }
+
+.axis--x g line, .axis--y g line {
+  stroke: white; }
+
+.axis--x g text, .axis--y g text {
+  fill: white; }
+
+#attributes a {
+  width: 100%; }
+
+.chart-types a {
+  width: 100%; }
+
+.container {
+  margin: 0 auto;
+  max-width: 1280px;
+  width: 90%; }
+  @media only screen and (min-width: 601px) {
+    .container {
+      width: 85%; } }
+  @media only screen and (min-width: 993px) {
+    .container {
+      width: 90%; } }
+
+.fixed-action-btn {
+  position: fixed;
+  right: 23px;
+  bottom: 23px;
+  padding-top: 15px;
+  margin-bottom: 0;
+  z-index: 998;
+  bottom: 45px;
+  right: 24px; }
+
+.chart {
+  margin-top: 0px; }
+
+.chart-types {
+  padding-top: 50px; }
+  .chart-types a {
+    margin: 5px; }
+
+rect {
+  margin: 5px;
+  -moz-transition: all 0.3s;
+  -webkit-transition: all 0.3s;
+  -o-transition: all 0.3s;
+  transition: all 0.3s;
+  -webkit-box-shadow: 2px 2px 3px white;
+  -moz-box-shadow: 2px 2px 3px white;
+  box-shadow: 2px 2px 3px white; }
+
+rect:hover {
+  fill: #01579b; }
+
+text:hover {
+  fill: white; }
+
+.bar {
+  fill: #039be5;
+  border: 0; }
+
+.tooltip {
+  position: absolute;
+  display: none;
+  min-width: 50px;
+  height: auto;
+  background: none repeat scroll 0 0 #fff;
+  color: #4682B4;
+  padding: 14px;
+  text-align: center;
+  border-radius: 1px;
+  -webkit-box-shadow: 1px 1px 2px 3px #049BE5;
+  /* Safari 3-4, iOS 4.0.2 - 4.2, Android 2.3+ */
+  -moz-box-shadow: 1px 1px 2px 3px #049BE5;
+  /* Firefox 3.5 - 3.6 */
+  box-shadow: 1px 1px 2px 3px #049BE5; }
+
+.links line {
+  stroke: #999;
+  stroke-opacity: 0.6; }
+
+.nodes circle {
+  stroke: #fff;
+  stroke-width: 1.5px; }
+
+.legend {
+  /* NEW */
+  font-size: 12px;
+  /* NEW */ }
+
+/* NEW */

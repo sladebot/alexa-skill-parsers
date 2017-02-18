@@ -16,14 +16,6 @@ var margin = {top: 20, right: 20, bottom: 30, left: 40},
 var legendRectSize = 18;
 var legendSpacing = 4;
 
-// const color = d3.scaleOrdinal(d3.schemeCategory20)
-    // .range(["#d32f2f", "#c2185b", "#7b1fa2", 
-    //         "#5e35b1", "#3949ab", "#1e88e5", 
-    //         "#039be5", "#00acc1", "#00897b", 
-    //         "#43a047", "#7cb342", "#c0ca33", 
-    //         "#fdd835", "#ffb300", "#fb8c00", 
-    //         "#f4511e", "#6d4c41"]);
-
 const chartContainer = $('#chart-container');
 
 var svg = d3.select(".chart").append("svg")
@@ -121,7 +113,6 @@ function renderPie(binData) {
 
   let radius = Math.min(width, height) / 2 - 40;
   
-  // Removing existing SVG
   d3.select("svg").remove().exit();
   let color = d3.scaleOrdinal(d3.schemeCategory10)
     .range(["#d32f2f", "#c2185b", "#7b1fa2", 
@@ -189,11 +180,11 @@ function onDrag (_e){
   let data = chartContainer.data("data");
   let xLocation = d3.event.x;
   let _ticks = chartContainer.data("ticks");
-  if((xLocation > startX) & (_ticks < 60))  {
-    _ticks += Math.log(xLocation - startX)
-    chartContainer.data("ticks", _ticks);
-  } else if((xLocation < startX) & (_ticks > 0)) {
+  if((xLocation > startX) & (_ticks > 0))  {
     _ticks = 5
+    chartContainer.data("ticks", _ticks);
+  } else if((xLocation < startX) & (_ticks < 60)) {
+    _ticks += Math.log(startX - xLocation)
     chartContainer.data("ticks", _ticks);
   }
   updateHistogram(selectedAttribute, data, chartContainer.data("ticks"));
@@ -495,7 +486,6 @@ function __initHandlers() {
 
 d3.csv("data/data.csv", function(error, data) {
   if (error) throw error;
-  // TODO: Automate this cleaning.
   data.forEach(_d => {
     _d.LIMIT_BAL = +_d.LIMIT_BAL;
     _d.BILL_AMT1 = +_d.BILL_AMT1;
@@ -508,8 +498,6 @@ d3.csv("data/data.csv", function(error, data) {
   chartContainer.data("data", data);
   chartContainer.data("ticks", 20);
   let _items =  _.keys(data[0]);
-  //TODO: Something is going wrong when default selection is height
-  // let _selectedAttribute = _items[Math.floor(Math.random()*_items.length)] 
   let _selectedAttribute = "LIMIT_BAL";
   listAttributes(data, _selectedAttribute);
   renderHistogram(data, (_d) => {return parseInt(_.get(_d, _selectedAttribute))});
