@@ -43,10 +43,9 @@ const handlers = {
         this.emit(':tellWithCard', speechOutput);
     },
     'SelectWorkout': function(intent) {
-        console.log("Selection - ", this.event.request.intent.slots.workout.value);
         let selection = this.event.request.intent.slots.workout.value;
         const workoutList = constants.WORKOUTS;
-
+        console.log("Searching ${workoutList} for ${selection}")
         let workout = _.find(workoutList, selection)
         const speechOutput = constants.START_WORKOUT_MESSAGE + workout;
         console.log(`${workout} ----------- ${speechOutput}`)
