@@ -46,12 +46,14 @@ const handlers = {
         console.log("Selection - ", this.event.request.intent.slots.workout.value);
         let selection = this.event.request.intent.slots.workout.value;
         const workoutList = constants.WORKOUTS;
-        
-        let workout = workoutList.map((_workout) => {
+        let workout = null;
+
+        workoutList.forEach(function(_workout) {
             if(_workout == selection) {
-                return _workout;
+                workout = selection
             }
         });
+
         const speechOutput = constants.START_WORKOUT_MESSAGE + workout;
         this.emit(':tell', speechOutput);
     },
