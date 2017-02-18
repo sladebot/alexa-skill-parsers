@@ -42,6 +42,9 @@ const handlers = {
         this.emit(':tellWithCard', speechOutput);
     },
     'GetWorkout': function(intent) {
+        console.log("Selection - ", intent);
+        
+        
         const workoutList = constants.WORKOUTS;
         let workout = null;
         
