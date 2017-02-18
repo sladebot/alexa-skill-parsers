@@ -1,5 +1,6 @@
 
 let express = require("express"),
+  pg = require("pg"),
   bodyParser = require("body-parser"),
   alexa = require("./alexa"),
   app = express();
@@ -12,6 +13,10 @@ const workouts = [
   'Crunches',
   'Burpees'
 ];
+
+// var client = new pg.Client();
+
+
 
 app.use(bodyParser.json({
   verify: function getRawBody(req, res, buf) {
@@ -37,6 +42,7 @@ app.post('/api/alexa', (req, res) => {
 
 app.post("/api/iot/device", (req, res) => {
   console.log("GOT IOT DATA", req.body);
+  console.log(req)
   var data = req.body;
   // Store data to Postgres
   var deviceData = {
@@ -49,6 +55,7 @@ app.post("/api/iot/device", (req, res) => {
 
 app.post("/api/iot/user", (req, res) => {
   console.log("GOT IOT DATA", req.body);
+  console.log(req);
   var data = req.body;
   var userData = {
     exercise: data.exercise,
@@ -56,7 +63,7 @@ app.post("/api/iot/user", (req, res) => {
     improvements: data.improvements,
     device_id: data.device_id
   };
-
+  // Store data to Postgres
   res.status(200).json({"status": "OK"});
 });
 
