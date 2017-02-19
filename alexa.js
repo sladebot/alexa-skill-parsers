@@ -3,9 +3,7 @@ var _ = require("lodash");
 var Alexa = require("alexa-sdk");
 var similarity = require("similarity");
 
-global.meta = {
-    
-};
+global.meta = {};
 
 const APP_ID = "amzn1.ask.skill.8985b048-54ab-452c-bee1-b9a0bd93603d";
 
@@ -16,7 +14,7 @@ const constants = {
         'Jumping Jacks'
     ],
     SKILL_NAME: 'Workouts',
-    GET_WORKOUT_SELECTION_MESSAGE: "Here are your workouts options: ",
+    GET_WORKOUT_SELECTION_MESSAGE: "Here are your workout options: ",
     HELP_MESSAGE: 'You can say tell me workouts, or, you can say exit... What can I help you with?',
     HELP_REPROMPT: 'What can I help you with?',
     STOP_MESSAGE: 'Goodbye!',
@@ -53,7 +51,7 @@ var newSessionHandlers = {
 var workoutHandlers = Alexa.CreateStateHandler(STATES.WORKOUT, {
     "GetWorkouts": function() {
         const workoutList = constants.WORKOUTS;
-        let workoutListMessage = workoutList.map((_workout, index) => `${_workout} <break time='1s'/> `);
+        let workoutListMessage = workoutList.map((_workout, index) => `${_workout} <break time='0.5s'/> `);
         const speechOutput = constants.GET_WORKOUT_SELECTION_MESSAGE + workoutListMessage.join(' ');
         const repromptText = speechOutput
         global.meta.speechOutput = speechOutput;
@@ -65,6 +63,7 @@ var workoutHandlers = Alexa.CreateStateHandler(STATES.WORKOUT, {
         let selection = this.event.request.intent.slots.workout.value;
         const workoutList = constants.WORKOUTS;
         let parsedWorkout = _.find(workoutList, _o => similarity(_o, selection) > 0.5);
+        
         if(parsedWorkout) {
             this.handler.state = STATES.WORKOUT
             global.meta.setCount = 3
@@ -80,6 +79,7 @@ var workoutHandlers = Alexa.CreateStateHandler(STATES.WORKOUT, {
             let selection = global.meta.workoutsPending.pop()
             global.meta.runningWorkout = selection;
             global.meta.setCount = 3
+            
             this.emitWithState("StartWorkoutSet")
         } else {
             this.emitWithState("FinishWorkout")
@@ -91,7 +91,12 @@ var workoutHandlers = Alexa.CreateStateHandler(STATES.WORKOUT, {
         if(global.meta.setCount > 0) {
             global.meta.setCount -= 1
             var runningWorkout = global.meta.runningWorkout;
-            var speechOutput = `${runningWorkout} is starting now. <break time="0.5s" /> Just say I am done when you finish a set.`;
+            var speechOutput;
+            if(runningWorkout) {
+                var runningWorkoutSpeech = `${runningWorkout} is starting now. <break time="0.5s" />`;
+                speechOutput = `${runningWorkoutSpeech} Just say I am done when you finish a set.`;
+            }
+            speechOutput = `Just say I am done when you finish a set.`;
             this.emit(":ask", speechOutput);
         } else {
            this.emitWithState("FinishSet");
