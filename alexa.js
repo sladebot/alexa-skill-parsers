@@ -23,7 +23,9 @@ const constants = {
 const STATES = {
     WORKOUTFIND: "_WORKOUTFINDERMODE",
     WORKOUT: "_WORKOUTMODE",
-    HELP: "_HELPMODE"
+    WORKOUTSET: "_WORKOUTSETMODE",
+    HELP: "_HELPMODE",
+    
 };
 
 
