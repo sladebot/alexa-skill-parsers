@@ -75,12 +75,13 @@ var workoutHandlers = Alexa.CreateStateHandler(STATES.WORKOUT, {
         }
     },
     "ContinueWorkout": function() {
+        this.handler.state = STATES.WORKOUT
         if(global.meta.workoutsPending.length > 0) {
             let selection = global.meta.workoutsPending.pop()
             global.meta.setCount = 3
             this.emitWithState("StartWorkoutSet")
         } else {
-            this.emit("FinishWorkout")
+            this.emitWithState("FinishWorkout")
         }
     },
     "StartWorkoutSet": function() {
@@ -91,15 +92,15 @@ var workoutHandlers = Alexa.CreateStateHandler(STATES.WORKOUT, {
             this.emit(":ask", "Just say I am done when you finish the set.")
         } else {
            console.log("Set finished & setCount - ", global.meta.setCount);
-           this.emit("FinishSet");
+           this.emitWithState("FinishSet");
         }
     },
     "FinishSet": function() {
         this.handler.state = STATES.WORKOUT
         if(global.meta.workoutsPending.length > 0) {
-            this.emit("ContinueWorkout");
+            this.emitWithState("ContinueWorkout");
         } else {
-            this.emit("FinishWorkout");
+            this.emitWithState("FinishWorkout");
         }
     },
     "FinishWorkout": function() {
@@ -107,15 +108,16 @@ var workoutHandlers = Alexa.CreateStateHandler(STATES.WORKOUT, {
         this.emit(":tellWithCard", "Great you're done, check out the app I've sent stats. Cya next time !")
     },
     "AMAZON.RepeatIntent": function() {
+        this.handler.state = STATES.WORKOUT
         this.emit(":ask", global.meta.speechOutput, global.meta.repromptText);
     },
     "AMAZON.HelpIntent": function() {
         this.handler.state = STATE.HELP;
-        this.emit("HelpUser", false);
+        this.emitWithState("HelpUser", false);
     },
     "AMAZON.StartOverIntent": function() {
         this.handler.state = STATES.HELP;
-        this.emit("HelpUser", false);
+        this.emitWithState("HelpUser", false);
     },
     "AMAZON.StopIntent": function() {
         this.handler.state = STATES.HELP;
