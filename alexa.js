@@ -71,7 +71,7 @@ var workoutGuessHandlers = Alexa.CreateStateHandler(STATES.WORKOUTFIND, {
 var workoutHandlers = Alexa.CreateStateHandler(STATES.WORKOUT, {
     "SelectWorkout": function() {
         this.handler.state = STATES.WORKOUTSET;
-        this.emitWithState("")
+        this.emit(":ask", "Do you want to start now ?")
         // let selection = this.event.request.intent.slots.workout.value;
         // console.log(selection)
         // const workoutList = constants.WORKOUTS;
@@ -122,8 +122,13 @@ var workoutHandlers = Alexa.CreateStateHandler(STATES.WORKOUT, {
 
 
 var workoutSetHandlers = Alexa.CreateStateHandler(STATES.WORKOUTSET, {
+    "AMAZON.YesIntent": function() {
+        this.handlers.state = STATES.WORKOUTSET;
+        this.emitWithState("StartWorkoutSet");
+    },
     "StartWorkoutSet": function() {
         // TODO: Publish workout start intent here.
+        console.log("Started workout set")
         if(global.meta["setCount"] > 0 & this) {
             global.meta.setCount -= 1
             this.emit(":ask", "Just say am done when youu finish the set.")
