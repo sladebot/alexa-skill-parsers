@@ -78,6 +78,7 @@ var workoutHandlers = Alexa.CreateStateHandler(STATES.WORKOUT, {
         this.handler.state = STATES.WORKOUT
         if(global.meta.workoutsPending.length > 0) {
             let selection = global.meta.workoutsPending.pop()
+            global.meta.runningWorkout = selection;
             global.meta.setCount = 3
             this.emitWithState("StartWorkoutSet")
         } else {
@@ -89,9 +90,10 @@ var workoutHandlers = Alexa.CreateStateHandler(STATES.WORKOUT, {
         this.handler.state = STATES.WORKOUT
         if(global.meta.setCount > 0) {
             global.meta.setCount -= 1
-            this.emit(":ask", "Just say I am done when you finish the set.")
+            var runningWorkout = global.meta.runningWorkout;
+            var speechOutput = `${runningWorkout} is starting now. <break time="0.5s" /> Just say I am done when you finish a set.`;
+            this.emit(":ask", speechOutput);
         } else {
-           console.log("Set finished & setCount - ", global.meta.setCount);
            this.emitWithState("FinishSet");
         }
     },
