@@ -26,7 +26,6 @@ const constants = {
 
 const STATES = {
     WORKOUT: "_WORKOUTMODE",
-    WORKOUTSET: "_WORKOUTSETMODE",
     HELP: "_HELPMODE",
     
 };
@@ -54,7 +53,7 @@ var newSessionHandlers = {
 var workoutHandlers = Alexa.CreateStateHandler(STATES.WORKOUT, {
     "GetWorkouts": function() {
         const workoutList = constants.WORKOUTS;
-        let workoutListMessage = workoutList.map((_workout, index) => `${_workout}  `);
+        let workoutListMessage = workoutList.map((_workout, index) => `${_workout} <break time=3s/> `);
         const speechOutput = constants.GET_WORKOUT_SELECTION_MESSAGE + workoutListMessage.join(' ');
         const repromptText = speechOutput
         global.meta.speechOutput = speechOutput;
@@ -65,53 +64,65 @@ var workoutHandlers = Alexa.CreateStateHandler(STATES.WORKOUT, {
     "SelectWorkout": function() {
         let selection = this.event.request.intent.slots.workout.value;
         const workoutList = constants.WORKOUTS;
-        let workout = _.find(workoutList, _o => similarity(_o, selection) > 0.5);
-        if(workout) {
-            this.handler.state = STATES.WORKOUTSET
+        let parsedWorkout = _.find(workoutList, _o => similarity(_o, selection) > 0.5);
+        if(parsedWorkout) {
+            this.handler.state = STATES.WORKOUT
             global.meta.setCount = 3
-            global.meta.workoutCount = 1
-            console.log("Attribute - ", global.meta);
-            console.log(this.handler.state);
-            console.log("Emitting to StartWorkoutSet");
-            this.emitWithState("StartWorkoutSet");
+            global.meta.workoutsPending = _.remove(workoutList, (_workout) => _workout === parsedWorkout);
+            this.emit("StartWorkoutSet");
         } else {
-            
             this.emit(":ask", "Din't match, please say the name of the workout again !")
         }
     },
-    // "ContinueWorkout": function() {
-    //     if(global.meta.workoutCount == 2) {
-    //        this.emit(":tell", "You are done with your workouts")
-    //     }
-    //     let workout = workoutList[global.meta.workoutCount]
-    //     global.meta.workoutCount += 1
-    // },
-    // "StartWorkoutSet": function() {
-    //     // TODO: Publish workout start intent here.
-    //     this.handler.state = STATES.WORKOUT
-    //     if(global.meta["setCount"] > 0) {
-    //         global.meta.setCount -= 1
-    //         this.emit(":ask", "Just say am done when youu finish the set.")
-    //     }
-    // },
-    // "FinishSet": function() {
-    //     this.handler.state = STATES.WORKOUT
-    //     if(global.meta["setCount"] == 0) {
-    //         this.emitWithState("SelectWorkout");
-    //     } else {
-    //         this.emitWithState("StartWorkoutSet");
-    //     }
-    // },
-    // "AMAZON.RepeatIntent": function() {
-    //     this.emit(":ask", global.meta.speechOutput, global.meta.repromptText);
-    // },
+    "PerformRestWorkouts": function() {
+        if(global.meta.workoutsPending.length > 0) {
+            let selection = global.meta.workoutsPending.pop()
+            global.meta.setCount = 3
+            this.emit("StartWorkoutSet")
+        } else {
+            this.emit("FinishWorkout")
+        }
+    },
+    "StartWorkoutSet": function() {
+        // TODO: Publish workout start intent here.
+        this.handler.state = STATES.WORKOUT
+        if(global.meta.setCount > 0) {
+            global.meta.setCount -= 1
+            this.emit(":ask", "Just say I am done when you finish the set.")
+        } else {
+           console.log("Set finished & setCount - ", global.meta.setCount);
+           this.emit("FinishSet");
+        }
+    },
+    "ContinueWorkout": function() {
+        if(global.meta.workoutCount == 2) {
+           this.emit(":tell", "You are done with your workouts")
+        }
+        let workout = workoutList[global.meta.workoutCount]
+        global.meta.workoutCount += 1
+    },
+    "FinishSet": function() {
+        this.handler.state = STATES.WORKOUT
+        if(global.meta.workoutsPending.length > 0) {
+            this.emit("PerformRestWorkouts");
+        } else {
+            this.emit("FinishWorkout");
+        }
+    },
+    "FinishWorkout": function() {
+        this.handler.state = STATES.WORKOUT;
+        this.emit(":tellWithCard", "Great you're done, check out the app I've sent stats. Cya next time !")
+    },
+    "AMAZON.RepeatIntent": function() {
+        this.emit(":ask", global.meta.speechOutput, global.meta.repromptText);
+    },
     "AMAZON.HelpIntent": function() {
         this.handler.state = STATE.HELP;
-        this.emitWithState("HelpUser", false);
+        this.emit("HelpUser", false);
     },
     "AMAZON.StartOverIntent": function() {
         this.handler.state = STATES.HELP;
-        this.emitWithState("HelpUser", false);
+        this.emit("HelpUser", false);
     },
     "AMAZON.StopIntent": function() {
         this.handler.state = STATES.HELP;
@@ -122,30 +133,6 @@ var workoutHandlers = Alexa.CreateStateHandler(STATES.WORKOUT, {
     },
     "SessionEndedRequest": function() {
         console.log("Session ended in workout finder state.")
-    }
-});
-
-
-var workoutSetHandlers = Alexa.CreateStateHandler(STATES.WORKOUTSET, {
-    "NewSession": function() {
-        this.handler.stte = STATES.WORKOUTSET;
-        this.emit("StartWorkoutSet");
-    },
-    "StartWorkoutSet": function() {
-        console.log("IN WORKOUT SET")
-        // TODO: Publish workout start intent here.
-        if(global.meta["setCount"] > 0 & this) {
-            global.meta.setCount -= 1
-            this.emit(":ask", "Just say am done when youu finish the set.")
-        }
-    },
-    "FinishSet": function() {
-        if(global.meta["setCount"] == 0) {
-            this.handler.state = STATES.WORKOUT
-            this.emitWithState("SelectWorkout");
-        } else {
-            this.emitWithState("StartWorkoutSet");
-        }
     }
 });
 
