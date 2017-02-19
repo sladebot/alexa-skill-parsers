@@ -25,7 +25,6 @@ const constants = {
 }
 
 const STATES = {
-    WORKOUTFIND: "_WORKOUTFINDERMODE",
     WORKOUT: "_WORKOUTMODE",
     WORKOUTSET: "_WORKOUTSETMODE",
     HELP: "_HELPMODE",
@@ -35,11 +34,11 @@ const STATES = {
 
 var newSessionHandlers = {
     "LaunchRequest": function() {
-        this.handler.state = STATES.WORKOUTFIND;
+        this.handler.state = STATES.WORKOUT;
         this.emitWithState("GetWorkouts", false);
     },
     "AMAZON.StartOverIntent": function() {
-        this.handler.state = STATES.WORKOUTFIND;
+        this.handler.state = STATES.WORKOUT;
         this.emitWithState("GetWorkouts", false);
     },
     "AMAZON.HelpIntent": function() {
