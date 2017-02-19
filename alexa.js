@@ -14,7 +14,7 @@ global.meta = {};
 var HOST = '';
 
 var sensorPiTCPServer = net.createServer(function(socket) {
-	socket.write('Echo server\r\n');
+	// socket.write('Echo server\r\n');
 	socket.pipe(socket);
 });
 sensorPiTCPServer.listen(5800, '');
@@ -72,6 +72,7 @@ const STATES = {
 
 function sendDataToSensors(workout) {
     if(workout == "Push Ups") {
+        console.log("Sending data to sensor ::::::::::")
         sensorPiClient.write("1");
     } else if(workout == "Squats") {
         cameraPiTCPClient.write("1");
