@@ -36,7 +36,7 @@ const STATES = {
 var entryPointHandlers = {
     "LaunchRequest": function() {
         this.handler.state = STATES.WORKOUTFIND;
-        this.emitWithState("GetWorkouts");
+        this.emitWithState("GetWorkouts", false);
     },
     "AMAZON.StartOverIntent": function() {
         this.handler.state = STATES.WORKOUTFIND;
@@ -77,9 +77,9 @@ var workoutHandlers = Alexa.CreateStateHandler(STATES.WORKOUT, {
         if(workout) {
             this.handler.state = STATES.WORKOUTSET
             global.meta.setCount = 3
-            global.meta.workoutCount = 1            
+            global.meta.workoutCount = 1
             console.log("Attribute - ", global.meta);
-            this.emitWithState("StartWorkoutSet", true);
+            this.emitWithState("StartWorkoutSet", false);
         } else {
             
             this.emit(":ask", "Din't match, please say the name of the workout again !")
