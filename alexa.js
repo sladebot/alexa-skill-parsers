@@ -30,11 +30,11 @@ const STATES = {
 var entryPointHandlers = {
     "LaunchRequest": function() {
         this.handler.state = STATES.WORKOUTFIND;
-        this.emitWithState("StartWorkout", true);
+        this.emitWithState("GetWorkouts", true);
     },
     "AMAZON.StartOverIntent": function() {
         this.handler.state = STATES.WORKOUTFIND;
-        this.emitWithState("StartWorkout", true);
+        this.emitWithState("GetWorkouts", true);
     },
     "AMAZON.HelpIntent": function() {
         this.handler.state = STATES.HELP;
