@@ -32,7 +32,6 @@ const STATES = {
 var entryPointHandlers = {
     "LaunchRequest": function() {
         this.handler.state = STATES.WORKOUTFIND;
-        console.log("STATE ::", this.handler.state);
         this.emitWithState("GetWorkouts");
     },
     "AMAZON.StartOverIntent": function() {
@@ -57,6 +56,10 @@ var workoutGuessHandlers = Alexa.CreateStateHandler(STATES.WORKOUTFIND, {
         const speechOutput = constants.GET_WORKOUT_SELECTION_MESSAGE + workoutListMessage.join(' ');
         const repromptText = speechOutput
 
+        console.log(speechOutput)
+        console.log(repromptText)
+
+        console.log(this.attribute)
         Object.assign(this.attribute, {
             "speechOutput": speechOutput,
             "repromptText": repromptText
