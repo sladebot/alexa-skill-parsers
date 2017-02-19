@@ -108,7 +108,8 @@ var workoutHandlers = Alexa.CreateStateHandler(STATES.WORKOUT, {
         const speechOutput = constants.GET_WORKOUT_SELECTION_MESSAGE + workoutListMessage.join(' ');
         const repromptText = speechOutput
         global.meta.speechOutput = speechOutput;
-        global.meta.repromptText = repromptText
+        global.meta.repromptText = repromptText;
+        global.meta.workoutsPending = null;
         this.handler.state = STATES.WORKOUT
         this.emit(':askWithCard', speechOutput, repromptText);
     },
