@@ -30,15 +30,16 @@ const STATES = {
 var entryPointHandlers = {
     "LaunchRequest": function() {
         this.handler.state = STATES.WORKOUTFIND;
-        this.emitWithState("GetWorkouts", true);
+        console.log("STATE ::", this.handler.state);
+        this.emitWithState("GetWorkouts");
     },
     "AMAZON.StartOverIntent": function() {
         this.handler.state = STATES.WORKOUTFIND;
-        this.emitWithState("GetWorkouts", true);
+        this.emitWithState("GetWorkouts", false);
     },
     "AMAZON.HelpIntent": function() {
         this.handler.state = STATES.HELP;
-        this.emitWithState("HelpUser", true);
+        this.emitWithState("HelpUser", false);
     },
     "Unhandled": function() {
         var speechOutput = constants.UNHANDLED_MESSAGE;
