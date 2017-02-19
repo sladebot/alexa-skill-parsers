@@ -3,6 +3,10 @@ var _ = require("lodash");
 var Alexa = require("alexa-sdk");
 var similarity = require("similarity");
 
+global.meta = {
+    
+};
+
 const APP_ID = "amzn1.ask.skill.8985b048-54ab-452c-bee1-b9a0bd93603d";
 
 const constants = {
@@ -56,8 +60,8 @@ var workoutGuessHandlers = Alexa.CreateStateHandler(STATES.WORKOUTFIND, {
         const speechOutput = constants.GET_WORKOUT_SELECTION_MESSAGE + workoutListMessage.join(' ');
         const repromptText = speechOutput
 
-        this.attribute = {}
-        Object.assign(this.attribute, {
+        global.meta = {}
+        Object.assign(global.meta, {
             "speechOutput": speechOutput,
             "repromptText": repromptText
         });
@@ -74,11 +78,11 @@ var workoutHandlers = Alexa.CreateStateHandler(STATES.WORKOUT, {
         let workout = _.find(workoutList, _o => similarity(_o, selection) > 0.5);
         if(workout) {
             this.handler.state = STATES.WORKOUTSET
-            Object.assign(this.attribute, {
+            Object.assign(global.meta, {
                 setCount: 3,
                 workoutCount: 1
             })
-            console.log("Attribute - ", this.attribute);
+            console.log("Attribute - ", global.meta);
             this.emitWithState("StartWorkoutSet", true);
         } else {
             
@@ -86,16 +90,16 @@ var workoutHandlers = Alexa.CreateStateHandler(STATES.WORKOUT, {
         }
     },
     "ContinueWorkout": function() {
-        if(this.attribute.workoutCount == 2) {
+        if(global.meta.workoutCount == 2) {
            this.emit(":tell", "You are done with your workouts")
         }
-        let workout = workoutList[this.attribute.workoutCount]
-        Object.assign({
-            workoutCount: this.attribute.workoutCount + 1
+        let workout = workoutList[global.meta.workoutCount]
+        Object.assign(global.meta, {
+            workoutCount: global.meta.workoutCount + 1
         });
     },
     "AMAZON.RepeatIntent": function() {
-        this.emit(":ask", this.attributes["speechOutput"], this.attribute["repromptText"]);
+        this.emit(":ask", global.meta["speechOutput"], global.meta["repromptText"]);
     },
     "AMAZON.HelpIntent": function() {
         this.handler.state = STATE.HELP;
@@ -118,15 +122,15 @@ var workoutHandlers = Alexa.CreateStateHandler(STATES.WORKOUT, {
 var workoutSetHandlers = Alexa.CreateStateHandler(STATES.WORKOUTSET, {
     "StartWorkoutSet": function() {
         // TODO: Publish workout start intent here.
-        if(this.attribute["setCount"] > 0 & this) {
-            Object.assign(this.attribute, {
-                setCount: this.attribute["setCount"] - 1
+        if(global.meta["setCount"] > 0 & this) {
+            Object.assign(global.meta, {
+                setCount: global.meta["setCount"] - 1
             })
             this.emit(":ask", "Just say am done when youu finish the set.")
         }
     },
     "FinishSet": function() {
-        if(this.attribute["setCount"] == 0) {
+        if(global.meta["setCount"] == 0) {
             this.handler.state = STATES.WORKOUT
             this.emitWithState("SelectWorkout");
         } else {
