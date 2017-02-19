@@ -77,8 +77,10 @@ var workoutHandlers = Alexa.CreateStateHandler(STATES.WORKOUT, {
         console.log(selection)
         const workoutList = constants.WORKOUTS;
         let workout = _.find(workoutList, _o => similarity(_o, selection) > 0.5);
+        console.log("Selected workout - ", workout);
         if(workout) {
             this.handler.state = STATES.WORKOUTSET
+            
             Object.assign(global.meta, {
                 setCount: 3,
                 workoutCount: 1
