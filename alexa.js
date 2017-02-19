@@ -107,7 +107,7 @@ var workoutHandlers = Alexa.CreateStateHandler(STATES.WORKOUT, {
     "StartWorkoutSet": function() {
         // TODO: Publish workout start intent here.
         this.handler.state = STATES.WORKOUT
-        if(global.meta["setCount"] > 0 & this) {
+        if(global.meta["setCount"] > 0) {
             global.meta.setCount -= 1
             this.emit(":ask", "Just say am done when youu finish the set.")
         }
