@@ -62,7 +62,7 @@ var workoutGuessHandlers = Alexa.CreateStateHandler(STATES.WORKOUTFIND, {
         // global.meta.speechOutput = speechOutput;
         // global.meta.repromptText = repromptText
 
-        this.handler.state = STATES.WORKOUT
+        // this.handler.state = STATES.WORKOUT
         // this.emit(':askWithCard', speechOutput, repromptText);
         this.emit(':askWithCard', "Going to SelectWorkout");
     }
@@ -122,7 +122,7 @@ var workoutHandlers = Alexa.CreateStateHandler(STATES.WORKOUT, {
 
 
 var workoutSetHandlers = Alexa.CreateStateHandler(STATES.WORKOUTSET, {
-    "AMAZON.YesIntent": function() {
+    "YesIntent": function() {
         this.handlers.state = STATES.WORKOUTSET;
         this.emitWithState("StartWorkoutSet");
     },
