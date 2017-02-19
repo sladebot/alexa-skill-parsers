@@ -58,7 +58,7 @@ var workoutGuessHandlers = Alexa.CreateStateHandler(STATES.WORKOUTFIND, {
 
         console.log(speechOutput)
         console.log(repromptText)
-
+        this.attribute = {}
         console.log(this.attribute)
         Object.assign(this.attribute, {
             "speechOutput": speechOutput,
