@@ -24,8 +24,7 @@ const constants = {
 
 const STATES = {
     WORKOUT: "_WORKOUTMODE",
-    HELP: "_HELPMODE",
-    
+    HELP: "_HELPMODE"
 };
 
 
@@ -69,6 +68,7 @@ var workoutHandlers = Alexa.CreateStateHandler(STATES.WORKOUT, {
             global.meta.setCount = 3
             global.meta.workoutsPending = _.remove(workoutList, (_workout) => _workout === parsedWorkout);
             this.emitWithState("StartWorkoutSet");
+            console.log("Called for first WORKOUT")
         } else {
             this.emit(":ask", "Din't match, please say the name of the workout again !")
         }
@@ -81,6 +81,7 @@ var workoutHandlers = Alexa.CreateStateHandler(STATES.WORKOUT, {
             global.meta.setCount = 3
             
             this.emitWithState("StartWorkoutSet")
+            console.log(`Called for ${global.meta.runningWorkout} WORKOUT`)
         } else {
             this.emitWithState("FinishWorkout")
         }

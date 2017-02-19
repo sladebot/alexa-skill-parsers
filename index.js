@@ -95,8 +95,9 @@ app.post("/api/iot/device", (req, res) => {
     device_id: +data.device_id,
     is_active: data.is_active
   }
-  var query = client.query(`INSERT INTO iot_devices (user_id, device_id, is_active) VALUES(${deviceData.user_id}, ${deviceData.device_id}, ${deviceData.is_active})`)
+  // var query = client.query(`INSERT INTO iot_devices (user_id, device_id, is_active) VALUES(${deviceData.user_id}, ${deviceData.device_id}, ${deviceData.is_active})`)
 
+  var query = client.query(`UPDATE SET user_id=${user_id}, is_active=${is_active} WHERE device_id=${deviceData.device_id}`);
   query.on('row', (row, result) => {
     result.addRow(row)
   });
