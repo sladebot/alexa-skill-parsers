@@ -56,14 +56,11 @@ var workoutGuessHandlers = Alexa.CreateStateHandler(STATES.WORKOUTFIND, {
         const speechOutput = constants.GET_WORKOUT_SELECTION_MESSAGE + workoutListMessage.join(' ');
         const repromptText = speechOutput
 
-        console.log(speechOutput)
-        console.log(repromptText)
         this.attribute = {}
         Object.assign(this.attribute, {
             "speechOutput": speechOutput,
             "repromptText": repromptText
         });
-        console.log(this.attribute)
 
         this.handler.state = STATES.WORKOUT
         this.emit(':askWithCard', speechOutput, repromptText);
@@ -81,6 +78,7 @@ var workoutHandlers = Alexa.CreateStateHandler(STATES.WORKOUT, {
                 setCount: 3,
                 workoutCount: 1
             })
+            console.log("Attribute - ", this.attribute);
             this.emitWithState("StartWorkoutSet", true);
         } else {
             
