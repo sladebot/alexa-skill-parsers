@@ -127,6 +127,10 @@ var workoutHandlers = Alexa.CreateStateHandler(STATES.WORKOUT, {
 
 
 var workoutSetHandlers = Alexa.CreateStateHandler(STATES.WORKOUTSET, {
+    "NewSession": function() {
+        this.handler.stte = STATES.WORKOUTSET;
+        this.emit("StartWorkoutSet");
+    },
     "StartWorkoutSet": function() {
         console.log("IN WORKOUT SET")
         // TODO: Publish workout start intent here.
