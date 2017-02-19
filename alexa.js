@@ -74,7 +74,7 @@ var workoutHandlers = Alexa.CreateStateHandler(STATES.WORKOUT, {
             this.emit(":ask", "Din't match, please say the name of the workout again !")
         }
     },
-    "PerformRestWorkouts": function() {
+    "ContinueWorkout": function() {
         if(global.meta.workoutsPending.length > 0) {
             let selection = global.meta.workoutsPending.pop()
             global.meta.setCount = 3
@@ -94,17 +94,10 @@ var workoutHandlers = Alexa.CreateStateHandler(STATES.WORKOUT, {
            this.emit("FinishSet");
         }
     },
-    "ContinueWorkout": function() {
-        if(global.meta.workoutCount == 2) {
-           this.emit(":tell", "You are done with your workouts")
-        }
-        let workout = workoutList[global.meta.workoutCount]
-        global.meta.workoutCount += 1
-    },
     "FinishSet": function() {
         this.handler.state = STATES.WORKOUT
         if(global.meta.workoutsPending.length > 0) {
-            this.emit("PerformRestWorkouts");
+            this.emit("ContinueWorkout");
         } else {
             this.emit("FinishWorkout");
         }
