@@ -53,7 +53,7 @@ var newSessionHandlers = {
 var workoutHandlers = Alexa.CreateStateHandler(STATES.WORKOUT, {
     "GetWorkouts": function() {
         const workoutList = constants.WORKOUTS;
-        let workoutListMessage = workoutList.map((_workout, index) => `${_workout} <break time='3s'/> `);
+        let workoutListMessage = workoutList.map((_workout, index) => `${_workout} <break time='1s'/> `);
         const speechOutput = constants.GET_WORKOUT_SELECTION_MESSAGE + workoutListMessage.join(' ');
         const repromptText = speechOutput
         global.meta.speechOutput = speechOutput;
