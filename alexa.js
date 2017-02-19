@@ -135,6 +135,6 @@ var workoutSetHandlers = Alexa.CreateStateHandler(STATES.WORKOUTSET, {
 exports.handler = (event, context) => {
     const alexa = Alexa.handler(event, context);
     alexa.APP_ID = APP_ID;
-    alexa.registerHandlers(entryPointHandlers);
+    alexa.registerHandlers(entryPointHandlers, workoutGuessHandlers, workoutHandlers, workoutSetHandlers);
     alexa.execute();
 };
