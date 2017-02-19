@@ -81,7 +81,7 @@ var workoutHandlers = Alexa.CreateStateHandler(STATES.WORKOUT, {
             console.log("Attribute - ", global.meta);
             console.log(this.handler.state);
             console.log("Emitting to StartWorkoutSet");
-            this.emitWithState("StartWorkoutSet", false);
+            this.emit("StartWorkoutSet", false);
         } else {
             
             this.emit(":ask", "Din't match, please say the name of the workout again !")
