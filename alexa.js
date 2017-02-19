@@ -33,7 +33,7 @@ const STATES = {
 };
 
 
-var entryPointHandlers = {
+var newSessionHandlers = {
     "LaunchRequest": function() {
         this.handler.state = STATES.WORKOUTFIND;
         this.emitWithState("GetWorkouts", false);
@@ -55,37 +55,40 @@ var entryPointHandlers = {
 
 var workoutGuessHandlers = Alexa.CreateStateHandler(STATES.WORKOUTFIND, {
     "GetWorkouts": function() {
-        const workoutList = constants.WORKOUTS;
-        let workoutListMessage = workoutList.map((_workout, index) => `${_workout}  `);
-        const speechOutput = constants.GET_WORKOUT_SELECTION_MESSAGE + workoutListMessage.join(' ');
-        const repromptText = speechOutput
-        global.meta.speechOutput = speechOutput;
-        global.meta.repromptText = repromptText
+        // const workoutList = constants.WORKOUTS;
+        // let workoutListMessage = workoutList.map((_workout, index) => `${_workout}  `);
+        // const speechOutput = constants.GET_WORKOUT_SELECTION_MESSAGE + workoutListMessage.join(' ');
+        // const repromptText = speechOutput
+        // global.meta.speechOutput = speechOutput;
+        // global.meta.repromptText = repromptText
 
         this.handler.state = STATES.WORKOUT
-        this.emit(':askWithCard', speechOutput, repromptText);
+        // this.emit(':askWithCard', speechOutput, repromptText);
+        this.emit(':askWithCard', "Going to SelectWorkout");
     }
 });
 
 var workoutHandlers = Alexa.CreateStateHandler(STATES.WORKOUT, {
     "SelectWorkout": function() {
-        let selection = this.event.request.intent.slots.workout.value;
-        console.log(selection)
-        const workoutList = constants.WORKOUTS;
-        let workout = _.find(workoutList, _o => similarity(_o, selection) > 0.5);
-        console.log("Selected workout - ", workout);
-        if(workout) {
-            this.handler.state = STATES.WORKOUTSET
-            global.meta.setCount = 3
-            global.meta.workoutCount = 1
-            console.log("Attribute - ", global.meta);
-            console.log(this.handler.state);
-            console.log("Emitting to StartWorkoutSet");
-            this.emit("StartWorkoutSet", false);
-        } else {
+        this.handler.state = STATES.WORKOUTSET;
+        this.emitWithState("")
+        // let selection = this.event.request.intent.slots.workout.value;
+        // console.log(selection)
+        // const workoutList = constants.WORKOUTS;
+        // let workout = _.find(workoutList, _o => similarity(_o, selection) > 0.5);
+        // console.log("Selected workout - ", workout);
+        // if(workout) {
+        //     this.handler.state = STATES.WORKOUTSET
+        //     global.meta.setCount = 3
+        //     global.meta.workoutCount = 1
+        //     console.log("Attribute - ", global.meta);
+        //     console.log(this.handler.state);
+        //     console.log("Emitting to StartWorkoutSet");
+        //     this.emit("StartWorkoutSet", false);
+        // } else {
             
-            this.emit(":ask", "Din't match, please say the name of the workout again !")
-        }
+        //     this.emit(":ask", "Din't match, please say the name of the workout again !")
+        // }
     },
     "ContinueWorkout": function() {
         if(global.meta.workoutCount == 2) {
@@ -139,6 +142,6 @@ var workoutSetHandlers = Alexa.CreateStateHandler(STATES.WORKOUTSET, {
 exports.handler = (event, context) => {
     const alexa = Alexa.handler(event, context);
     alexa.APP_ID = APP_ID;
-    alexa.registerHandlers(entryPointHandlers, workoutGuessHandlers, workoutHandlers, workoutSetHandlers);
+    alexa.registerHandlers(newSessionHandlers, workoutGuessHandlers, workoutHandlers, workoutSetHandlers);
     alexa.execute();
 };
