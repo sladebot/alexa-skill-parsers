@@ -109,6 +109,9 @@ var workoutHandlers = Alexa.CreateStateHandler(STATES.WORKOUT, {
         this.handler.state = STATES.HELP;
         var speechOutput = `Would you like to stop theworkout ?`
     },
+    "Unhandled": function() {
+        console.log(this.event.request.intent)
+    },
     "SessionEndedRequest": function() {
         console.log("Session ended in workout finder state.")
     }
