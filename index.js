@@ -21,36 +21,36 @@ var client = new pg.Client(pgConnectionString);
 client.connect();
 
 
-var net = require("net");
-var server = net.createServer();
-server.on('connection', handleConnection);
+var net = require('net');
 
-server.listen(9000, () => {
-  console.log("TCP Server listening on - ", server.address());
-});
+var HOST = '127.0.0.1';
+var PORT = 9000;
 
-function handleConnection(conn) {  
-  var remoteAddress = conn.remoteAddress + ':' + conn.remotePort;
-  console.log('new client connection from %s', remoteAddress);
+// Create a server instance, and chain the listen function to it
+// The function passed to net.createServer() becomes the event handler for the 'connection' event
+// The sock object the callback function receives UNIQUE for each connection
+net.createServer(function(sock) {
+    
+    // We have a connection - a socket object is assigned to the connection automatically
+    console.log('CONNECTED: ' + sock.remoteAddress +':'+ sock.remotePort);
+    
+    // Add a 'data' event handler to this instance of socket
+    sock.on('data', function(data) {
+        
+        console.log('DATA ' + sock.remoteAddress + ': ' + data);
+        // Write the data back to the socket, the client will receive it as data from the server
+        sock.write('You said "' + data + '"');
+        
+    });
+    
+    // Add a 'close' event handler to this instance of socket
+    sock.on('close', function(data) {
+        console.log('CLOSED: ' + sock.remoteAddress +' '+ sock.remotePort);
+    });
+    
+}).listen(PORT, HOST);
 
-  conn.on('data', onConnData);
-  conn.once('close', onConnClose);
-  conn.on('error', onConnError);
-
-  function onConnData(d) {
-    console.log('connection data from %s: %j', remoteAddress, d);
-    conn.write(d);
-  }
-
-  function onConnClose() {
-    console.log('connection from %s closed', remoteAddress);
-  }
-
-  function onConnError(err) {
-    console.log('Connection %s error: %s', remoteAddress, err.message);
-  }
-}
-
+console.log('Server listening on ' + HOST +':'+ PORT);
 
 app.use(bodyParser.urlencoded({     // to support URL-encoded bodies
   extended: true
