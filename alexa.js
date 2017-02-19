@@ -74,6 +74,7 @@ var workoutGuessHandlers = Alexa.CreateStateHandler(STATES.WORKOUTFIND, {
 var workoutHandlers = Alexa.CreateStateHandler(STATES.WORKOUT, {
     "SelectWorkout": function() {
         let selection = this.event.request.intent.slots.workout.value;
+        console.log(selection)
         const workoutList = constants.WORKOUTS;
         let workout = _.find(workoutList, _o => similarity(_o, selection) > 0.5);
         if(workout) {
