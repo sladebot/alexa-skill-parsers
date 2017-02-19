@@ -59,8 +59,8 @@ var workoutGuessHandlers = Alexa.CreateStateHandler(STATES.WORKOUTFIND, {
         let workoutListMessage = workoutList.map((_workout, index) => `${_workout}  `);
         const speechOutput = constants.GET_WORKOUT_SELECTION_MESSAGE + workoutListMessage.join(' ');
         const repromptText = speechOutput
-        // global.meta.speechOutput = speechOutput;
-        // global.meta.repromptText = repromptText
+        global.meta.speechOutput = speechOutput;
+        global.meta.repromptText = repromptText
 
         this.handler.state = STATES.WORKOUT
         this.emit(':askWithCard', speechOutput, repromptText);
@@ -80,8 +80,8 @@ var workoutHandlers = Alexa.CreateStateHandler(STATES.WORKOUT, {
             global.meta.workoutCount = 1
             console.log("Attribute - ", global.meta);
             console.log(this.handler.state);
-            console.log("Emitting to StartWorkoutSet")
-            this.emitWithState("StartWorkoutSet");
+            console.log("Emitting to StartWorkoutSet");
+            this.emitWithState("StartWorkoutSet", false);
         } else {
             
             this.emit(":ask", "Din't match, please say the name of the workout again !")
