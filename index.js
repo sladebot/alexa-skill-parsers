@@ -81,7 +81,7 @@ app.post("/api/iot/user", (req, res) => {
   var userData = {
     exercise: data.exercise,
     rating: data.rating,
-    improvements: data.improvements,
+    improvements: data.improvements || "",
     device_id: data.device_id
   };
   var query = client.query(`INSERT INTO iot_data (exercise, rating, improvements, device_id) VALUES(${userData.exercise}, ${userData.rating}, ${userData.improvements}, ${userData.device_id})`)

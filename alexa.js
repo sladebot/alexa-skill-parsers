@@ -2,83 +2,50 @@
 var _ = require("lodash");
 var Alexa = require("alexa-sdk");
 var similarity = require("similarity");
-
 var net = require('net');
+global.meta = {};
 
+
+/**
+ * 
+ * TCP Stuff
+ * 
+ */
 var HOST = '127.0.0.1';
-var PORT = 5800;
-
-// Create a server instance, and chain the listen function to it
-// The function passed to net.createServer() becomes the event handler for the 'connection' event
-// The sock object the callback function receives UNIQUE for each connection
-// net.createServer(function(sock) {
-//     // We have a connection - a socket object is assigned to the connection automatically
-//     console.log('CONNECTED: ' + sock.remoteAddress +':'+ sock.remotePort);
-    
-//     sock.on('data', function(data) {
-//         console.log('DATA ' + sock.remoteAddress + ': ' + data);
-//         sock.write('You said "' + data + '"');
-//     });
-    
-    
-//     // Add a 'close' event handler to this instance of socket
-//     sock.on('close', function(data) {
-//         console.log('CLOSED: ' + sock.remoteAddress +' '+ sock.remotePort);
-//     });
-    
-// }).listen(PORT, HOST);
-
-// console.log('Server listening on ' + HOST +':'+ PORT);
 
 var sensorPiTCPServer = net.createServer(function(socket) {
 	socket.write('Echo server\r\n');
 	socket.pipe(socket);
 });
-
-sensorPiTCPServer.listen(9000, '127.0.0.1');
-
+sensorPiTCPServer.listen(5800, '127.0.0.1');
 var sensorPiClient = new net.Socket()
-
-sensorPiClient.connect(9000, HOST, () => {
+sensorPiClient.connect(5800, HOST, () => {
     console.log("TCP Server connected !");
     sensorPiClient.write('Hello, server! Love, Client.');
 });
-
 sensorPiClient.on('data', (data) => {
     console.log(`Got data via tcp from sensor Pi- ${data}`);
 })
-
 sensorPiClient.on('close', function() {
 	console.log('Sensor Pi Connection closed');
 });
-
-
 
 var cameraPiTCPServer = net.createServer(function(socket) {
 	socket.write('Echo server\r\n');
 	socket.pipe(socket);
 });
-
-cameraPiTCPServer.listen(9001, '127.0.0.1');
-
+cameraPiTCPServer.listen(5801, '127.0.0.1');
 var cameraPiTCPClient = new net.Socket()
-
-cameraPiTCPClient.connect(9001, HOST, () => {
+cameraPiTCPClient.connect(5801, HOST, () => {
     console.log("TCP Server connected !");
     cameraPiTCPClient.write('Hello, server! Love, Client.');
 });
-
 cameraPiTCPClient.on('data', (data) => {
     console.log(`Got data via tcp from sensor Pi- ${data}`);
 })
-
 cameraPiTCPClient.on('close', function() {
 	console.log('Sensor Pi Connection closed');
 });
-
-
-
-global.meta = {};
 
 const APP_ID = "amzn1.ask.skill.8985b048-54ab-452c-bee1-b9a0bd93603d";
 
