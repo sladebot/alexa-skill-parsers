@@ -11,7 +11,7 @@ global.meta = {};
  * TCP Stuff
  * 
  */
-var HOST = '127.0.0.1';
+var HOST = '';
 
 var sensorPiTCPServer = net.createServer(function(socket) {
 	socket.write('Echo server\r\n');
