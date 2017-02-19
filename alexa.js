@@ -69,7 +69,7 @@ var workoutHandlers = Alexa.CreateStateHandler(STATES.WORKOUT, {
             this.handler.state = STATES.WORKOUT
             global.meta.setCount = 3
             global.meta.workoutsPending = _.remove(workoutList, (_workout) => _workout === parsedWorkout);
-            this.emit("StartWorkoutSet");
+            this.emitWithState("StartWorkoutSet");
         } else {
             this.emit(":ask", "Din't match, please say the name of the workout again !")
         }
@@ -78,7 +78,7 @@ var workoutHandlers = Alexa.CreateStateHandler(STATES.WORKOUT, {
         if(global.meta.workoutsPending.length > 0) {
             let selection = global.meta.workoutsPending.pop()
             global.meta.setCount = 3
-            this.emit("StartWorkoutSet")
+            this.emitWithState("StartWorkoutSet")
         } else {
             this.emit("FinishWorkout")
         }
