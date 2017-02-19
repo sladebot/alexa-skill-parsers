@@ -24,8 +24,10 @@ client.on('connect', function() { // When connected
   });
 
   // publish a message to a topic
-  client.publish('data', 'my message', function() {
-    console.log("Message is published");
-    client.end(); // Close the connection when published
-  });
+  setInterval(() => {
+      client.publish('data', 'my message', function() {
+      console.log("Message is published");
+      client.end(); // Close the connection when published
+    });
+  }, 5000);
 });
