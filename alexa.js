@@ -17,10 +17,10 @@ var sensorPiTCPServer = net.createServer(function(socket) {
 	socket.write('Echo server\r\n');
 	socket.pipe(socket);
 });
-sensorPiTCPServer.listen(5800, '127.0.0.1');
+sensorPiTCPServer.listen(5800, '');
 var sensorPiClient = new net.Socket()
 sensorPiClient.connect(5800, HOST, () => {
-    console.log("TCP Server connected !");
+    console.log("TCP Server connected  on 5800");
     sensorPiClient.write('Hello, server! Love, Client.');
 });
 sensorPiClient.on('data', (data) => {
@@ -34,10 +34,10 @@ var cameraPiTCPServer = net.createServer(function(socket) {
 	socket.write('Echo server\r\n');
 	socket.pipe(socket);
 });
-cameraPiTCPServer.listen(5801, '127.0.0.1');
+cameraPiTCPServer.listen(5801, '');
 var cameraPiTCPClient = new net.Socket()
 cameraPiTCPClient.connect(5801, HOST, () => {
-    console.log("TCP Server connected !");
+    console.log("TCP Server connected at 5801");
     cameraPiTCPClient.write('Hello, server! Love, Client.');
 });
 cameraPiTCPClient.on('data', (data) => {
